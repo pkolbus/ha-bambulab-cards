@@ -136,12 +136,24 @@ export class AMS_CARD extends LitElement {
       this._entities = {
         humidity: this._entityList["humidity_index"],
         temperature: this._entityList["ams_temp"],
-        spools: [
-          this._entityList["tray_1"],
-          this._entityList["tray_2"],
-          this._entityList["tray_3"],
-          this._entityList["tray_4"],
-        ],
+        spools: (() => {
+          // Try tray_0 first
+          if (this._entityList["tray_0"]) {
+            return [
+              this._entityList["tray_0"],
+              this._entityList["tray_1"],
+              this._entityList["tray_2"],
+              this._entityList["tray_3"],
+            ];
+          }
+          // Fall back to tray_1 if tray_0 doesn't exist
+          return [
+            this._entityList["tray_1"],
+            this._entityList["tray_2"],
+            this._entityList["tray_3"],
+            this._entityList["tray_4"],
+          ];
+        })(),
         type: this._hass.devices[this._deviceId].model.toUpperCase(),
       };
     }
@@ -149,9 +161,7 @@ export class AMS_CARD extends LitElement {
 
   render() {
     if (this._style == "graphic") {
-      return html`
-        <graphic-ams-card />
-      `;
+      return html` <graphic-ams-card /> `;
     } else {
       return html` <vector-ams-card .showType=${this._showType} /> `;
     }
