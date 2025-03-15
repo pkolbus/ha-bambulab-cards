@@ -23,14 +23,24 @@
 
       .container {
         text-align: center;
-        max-width: 800px;
+        max-width: 100%;
+        width: 100%;
+        padding: 0 20px;
+        box-sizing: border-box;
       }
 
       .printer-container {
         position: relative;
-        width: 600px;
-        height: 700px;
+        width: 100%;
+        max-width: 800px;
         margin: 0 auto;
+      }
+
+      .printer-svg {
+        width: 100%;
+        height: auto;
+        max-height: 80vh;
+        display: block;
       }
 
       .printer-info {
@@ -39,11 +49,14 @@
 
       .controls {
         margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
       }
 
       button {
         padding: 10px 15px;
-        margin: 0 5px;
         background-color: #4caf50;
         color: white;
         border: none;
@@ -91,7 +104,6 @@
 
       .light-button {
         padding: 8px 12px;
-        margin: 0 5px;
         background-color: #2196f3;
         color: white;
         border: none;
@@ -109,9 +121,9 @@
       }
 
       .speed-selector {
-        display: inline-block;
-        margin-left: 10px;
-        vertical-align: middle;
+        display: inline-flex;
+        align-items: center;
+        margin: 5px;
       }
 
       .speed-selector select {
@@ -143,57 +155,47 @@
           fill 0.3s ease;
       }
 
-      .model-container {
-        clip-path: polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%);
-        transition: clip-path 0.5s ease-in-out;
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        .container h1 {
+          font-size: 1.5rem;
+        }
+
+        button,
+        .light-button {
+          padding: 8px 10px;
+          font-size: 0.9rem;
+        }
+
+        .speed-selector select {
+          padding: 4px;
+          font-size: 0.9rem;
+        }
+
+        #print-status {
+          font-size: 0.9rem;
+        }
       }
 
-      /* Hide model initially */
-      #model-image {
-        opacity: 0;
-      }
+      @media (max-width: 480px) {
+        .container h1 {
+          font-size: 1.2rem;
+        }
 
-      .chamber-light {
-        transition: opacity 0.3s ease-in-out;
-      }
+        button,
+        .light-button {
+          padding: 6px 8px;
+          font-size: 0.8rem;
+        }
 
-      .light-button {
-        padding: 8px 12px;
-        margin: 0 5px;
-        background-color: #2196f3;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-      }
+        .speed-selector {
+          flex-direction: column;
+          align-items: center;
+        }
 
-      .light-button:hover {
-        background-color: #0b7dda;
-      }
-
-      .light-button:disabled {
-        background-color: #cccccc;
-        cursor: not-allowed;
-      }
-
-      .speed-selector {
-        display: inline-block;
-        margin-left: 10px;
-        vertical-align: middle;
-      }
-
-      .speed-selector select {
-        padding: 6px;
-        border-radius: 4px;
-        border: 1px solid #ccc;
-        background-color: #f8f8f8;
-        font-size: 14px;
-      }
-
-      .speed-label {
-        margin-right: 5px;
-        font-weight: bold;
-        color: #333;
+        .speed-label {
+          margin-bottom: 5px;
+        }
       }
 
       /* Remove unused Material icons styling */
@@ -233,7 +235,14 @@
       <h1>Bambu Lab X1C 3D Printer Visualization</h1>
 
       <div class="printer-container">
-        <svg width="600" height="700" viewBox="0 0 600 700" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          class="printer-svg"
+          width="600"
+          height="700"
+          viewBox="0 0 600 700"
+          preserveAspectRatio="xMidYMid meet"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <!-- Printer Base -->
           <rect x="100" y="600" width="400" height="30" fill="#888888" rx="5" ry="5" />
 
@@ -617,6 +626,7 @@
       const displayTime = document.getElementById("display-time");
       const fanSpeedValue = document.getElementById("fan-speed-value");
       const doorStatus = document.getElementById("door-status");
+      const printerSvg = document.querySelector(".printer-svg");
 
       // Variables
       let isPrinting = false;
@@ -633,6 +643,33 @@
       const initialBedY = 280; // Bed starts at the top near the toolhead nozzle
       const bedRange = 250; // Total distance the bed can move down
       let toolheadSpeed = 5; // Speed of toolhead movement (pixels per frame) - default to Ludicrous
+
+      // Responsive scaling variables
+      let svgWidth = 600;
+      let svgHeight = 700;
+      let scaleFactor = 1;
+
+      // Function to update scaling factor based on current SVG size
+      function updateScaleFactor() {
+        const svgRect = printerSvg.getBoundingClientRect();
+        svgWidth = svgRect.width;
+        scaleFactor = svgWidth / 600; // 600 is the original SVG width
+      }
+
+      // Call initially and on window resize
+      updateScaleFactor();
+      window.addEventListener("resize", handleResize);
+
+      function handleResize() {
+        updateScaleFactor();
+
+        // If not printing, reset positions to ensure proper display after resize
+        if (!isPrinting) {
+          printHead.setAttribute("transform", `translate(300, ${initialHeadY})`);
+          printBedGroup.setAttribute("transform", `translate(0, ${initialBedY})`);
+          modelContainer.setAttribute("y", "0");
+        }
+      }
 
       // Position model container at the bed level
       modelContainer.setAttribute("y", "0");
@@ -834,8 +871,8 @@
         // Update toolhead position (moves in a sine wave pattern)
         toolheadPosition += toolheadSpeed;
 
-        // Calculate X position based on sine wave with a range of 100px
-        const headX = 300 + Math.sin(toolheadPosition / 100) * 100;
+        // Calculate X position based on sine wave with a range scaled by the current SVG size
+        const headX = 300 + Math.sin(toolheadPosition / 100) * (100 * scaleFactor);
 
         // Update toolhead position
         printHead.setAttribute("transform", `translate(${headX}, ${initialHeadY})`);
