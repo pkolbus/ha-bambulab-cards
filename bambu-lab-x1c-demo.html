@@ -134,6 +134,22 @@
         font-size: 14px;
       }
 
+      #ams-select option[value="1"] {
+        background-color: rgba(255, 82, 82, 0.2);
+      }
+
+      #ams-select option[value="2"] {
+        background-color: rgba(76, 175, 80, 0.2);
+      }
+
+      #ams-select option[value="3"] {
+        background-color: rgba(33, 150, 243, 0.2);
+      }
+
+      #ams-select option[value="4"] {
+        background-color: rgba(255, 193, 7, 0.2);
+      }
+
       .speed-label {
         margin-right: 5px;
         font-weight: bold;
@@ -153,6 +169,39 @@
         transition:
           transform 0.05s linear,
           fill 0.3s ease;
+      }
+
+      /* AMS Styling */
+      .ams-spool {
+        transition: transform 0.3s ease;
+      }
+
+      .ams-active {
+        stroke: #4caf50;
+        stroke-width: 2px;
+      }
+
+      .ams-nav-btn {
+        cursor: pointer;
+        transition: opacity 0.2s ease;
+      }
+
+      .ams-nav-btn:hover {
+        opacity: 0.9;
+      }
+
+      .filament-name {
+        font-size: 10px;
+        font-family: Arial, sans-serif;
+        font-weight: bold;
+        pointer-events: none;
+      }
+
+      .filament-percentage {
+        font-size: 12px;
+        font-family: monospace;
+        font-weight: bold;
+        pointer-events: none;
       }
 
       /* Responsive adjustments */
@@ -238,11 +287,221 @@
         <svg
           class="printer-svg"
           width="600"
-          height="700"
-          viewBox="0 0 600 700"
+          height="800"
+          viewBox="0 0 600 800"
           preserveAspectRatio="xMidYMid meet"
           xmlns="http://www.w3.org/2000/svg"
         >
+          <!-- AMS (Automatic Material System) -->
+          <g id="ams-system" transform="translate(0, -60)">
+            <!-- AMS Housing -->
+            <rect x="120" y="50" width="360" height="120" fill="#333333" rx="5" ry="5" />
+            <rect x="125" y="55" width="350" height="110" fill="#222222" rx="3" ry="3" />
+
+            <!-- AMS Logo - moved to bottom right -->
+            <text
+              x="450"
+              y="155"
+              fill="#FFFFFF"
+              font-size="12"
+              font-family="Arial, sans-serif"
+              font-weight="bold"
+              text-anchor="end"
+            >
+              BAMBU AMS
+            </text>
+
+            <!-- Filament Spools Container -->
+            <g id="ams-spools-container">
+              <!-- Spool 1 -->
+              <g id="spool-1" class="ams-spool" transform="translate(175, 110)">
+                <!-- Rotating part -->
+                <g id="spool-1-rotating">
+                  <circle
+                    id="spool-1-filament"
+                    cx="0"
+                    cy="0"
+                    r="30"
+                    fill="#FF5252"
+                    class="ams-active"
+                  />
+                  <circle cx="0" cy="0" r="8" fill="#333333" />
+                </g>
+                <!-- Static text elements -->
+                <text
+                  id="spool-1-name"
+                  x="0"
+                  y="-40"
+                  fill="#FFFFFF"
+                  text-anchor="middle"
+                  class="filament-name"
+                  font-size="10"
+                >
+                  PLA Red
+                </text>
+                <text
+                  id="spool-1-percentage"
+                  x="0"
+                  y="0"
+                  fill="#FFFFFF"
+                  text-anchor="middle"
+                  dominant-baseline="middle"
+                  class="filament-percentage"
+                  font-size="12"
+                >
+                  85%
+                </text>
+              </g>
+
+              <!-- Spool 2 -->
+              <g id="spool-2" class="ams-spool" transform="translate(255, 110)">
+                <!-- Rotating part -->
+                <g id="spool-2-rotating">
+                  <circle id="spool-2-filament" cx="0" cy="0" r="30" fill="#4CAF50" />
+                  <circle cx="0" cy="0" r="8" fill="#333333" />
+                </g>
+                <!-- Static text elements -->
+                <text
+                  id="spool-2-name"
+                  x="0"
+                  y="-40"
+                  fill="#FFFFFF"
+                  text-anchor="middle"
+                  class="filament-name"
+                  font-size="10"
+                >
+                  PLA Green
+                </text>
+                <text
+                  id="spool-2-percentage"
+                  x="0"
+                  y="0"
+                  fill="#FFFFFF"
+                  text-anchor="middle"
+                  dominant-baseline="middle"
+                  class="filament-percentage"
+                  font-size="12"
+                >
+                  65%
+                </text>
+              </g>
+
+              <!-- Spool 3 -->
+              <g id="spool-3" class="ams-spool" transform="translate(335, 110)">
+                <!-- Rotating part -->
+                <g id="spool-3-rotating">
+                  <circle id="spool-3-filament" cx="0" cy="0" r="30" fill="#2196F3" />
+                  <circle cx="0" cy="0" r="8" fill="#333333" />
+                </g>
+                <!-- Static text elements -->
+                <text
+                  id="spool-3-name"
+                  x="0"
+                  y="-40"
+                  fill="#FFFFFF"
+                  text-anchor="middle"
+                  class="filament-name"
+                  font-size="10"
+                >
+                  PLA Blue
+                </text>
+                <text
+                  id="spool-3-percentage"
+                  x="0"
+                  y="0"
+                  fill="#FFFFFF"
+                  text-anchor="middle"
+                  dominant-baseline="middle"
+                  class="filament-percentage"
+                  font-size="12"
+                >
+                  45%
+                </text>
+              </g>
+
+              <!-- Spool 4 -->
+              <g id="spool-4" class="ams-spool" transform="translate(415, 110)">
+                <!-- Rotating part -->
+                <g id="spool-4-rotating">
+                  <circle id="spool-4-filament" cx="0" cy="0" r="30" fill="#FFC107" />
+                  <circle cx="0" cy="0" r="8" fill="#333333" />
+                </g>
+                <!-- Static text elements -->
+                <text
+                  id="spool-4-name"
+                  x="0"
+                  y="-40"
+                  fill="#FFFFFF"
+                  text-anchor="middle"
+                  class="filament-name"
+                  font-size="10"
+                >
+                  PLA Yellow
+                </text>
+                <text
+                  id="spool-4-percentage"
+                  x="0"
+                  y="0"
+                  fill="#FFFFFF"
+                  text-anchor="middle"
+                  dominant-baseline="middle"
+                  class="filament-percentage"
+                  font-size="12"
+                >
+                  90%
+                </text>
+              </g>
+            </g>
+
+            <!-- AMS Navigation Arrows -->
+            <g id="ams-navigation">
+              <!-- Left Arrow -->
+              <g id="ams-prev-btn" class="ams-nav-btn" transform="translate(135, 110)">
+                <circle cx="0" cy="0" r="15" fill="#444444" />
+                <path d="M5,-8 L-5,0 L5,8" stroke="#FFFFFF" stroke-width="2" fill="none" />
+              </g>
+
+              <!-- Right Arrow -->
+              <g id="ams-next-btn" class="ams-nav-btn" transform="translate(465, 110)">
+                <circle cx="0" cy="0" r="15" fill="#444444" />
+                <path d="M-5,-8 L5,0 L-5,8" stroke="#FFFFFF" stroke-width="2" fill="none" />
+              </g>
+
+              <!-- AMS Indicator -->
+              <text
+                id="ams-indicator"
+                x="300"
+                y="155"
+                fill="#FFFFFF"
+                text-anchor="middle"
+                font-size="10"
+                font-family="Arial, sans-serif"
+              >
+                AMS 1 of 2
+              </text>
+            </g>
+
+            <!-- Filament Path Indicators -->
+            <path
+              d="M175,140 L175,150 L300,150 L300,160"
+              stroke="#FF5252"
+              stroke-width="2"
+              fill="none"
+              id="filament-path"
+            />
+
+            <!-- Connection tube between AMS and printer -->
+            <path d="M300,160 L300,190" stroke="#333333" stroke-width="8" fill="none" />
+            <path d="M300,160 L300,190" stroke="#222222" stroke-width="6" fill="none" />
+            <path
+              id="filament-tube-path"
+              d="M300,160 L300,190"
+              stroke="#FF5252"
+              stroke-width="2"
+              fill="none"
+            />
+          </g>
+
           <!-- Printer Base -->
           <rect x="100" y="600" width="400" height="30" fill="#888888" rx="5" ry="5" />
 
@@ -592,6 +851,15 @@
             <option value="5" selected>Ludicrous</option>
           </select>
         </div>
+        <div class="speed-selector">
+          <span class="speed-label">Filament:</span>
+          <select id="ams-select">
+            <option value="1" selected>Red PLA</option>
+            <option value="2">Green PLA</option>
+            <option value="3">Blue PLA</option>
+            <option value="4">Yellow PLA</option>
+          </select>
+        </div>
       </div>
 
       <div class="progress-container">
@@ -616,6 +884,7 @@
       const stopBtn = document.getElementById("stop-btn");
       const lightBtn = document.getElementById("light-btn");
       const speedSelect = document.getElementById("speed-select");
+      const amsSelect = document.getElementById("ams-select");
       const chamberLight = document.getElementById("chamber-light");
       const lightSource = document.getElementById("light-source");
       const printChamber = document.getElementById("print-chamber");
@@ -628,6 +897,54 @@
       const doorStatus = document.getElementById("door-status");
       const printerSvg = document.querySelector(".printer-svg");
 
+      // AMS Elements
+      const amsSpools = document.querySelectorAll(".ams-spool");
+      const filamentPath = document.getElementById("filament-path");
+      const amsPrevBtn = document.getElementById("ams-prev-btn");
+      const amsNextBtn = document.getElementById("ams-next-btn");
+      const amsIndicator = document.getElementById("ams-indicator");
+
+      // AMS Data - Multiple AMS units
+      const amsUnits = [
+        {
+          id: 1,
+          spools: [
+            { id: 1, name: "PLA Red", color: "#FF5252", percentage: 85, active: true },
+            { id: 2, name: "PLA Green", color: "#4CAF50", percentage: 65, active: false },
+            { id: 3, name: "PLA Blue", color: "#2196F3", percentage: 45, active: false },
+            { id: 4, name: "PLA Yellow", color: "#FFC107", percentage: 90, active: false },
+          ],
+        },
+        {
+          id: 2,
+          spools: [
+            { id: 1, name: "PETG Black", color: "#333333", percentage: 75, active: false },
+            { id: 2, name: "PETG White", color: "#EEEEEE", percentage: 60, active: false },
+            { id: 3, name: "PETG Orange", color: "#FF9800", percentage: 30, active: false },
+            { id: 4, name: "PETG Purple", color: "#9C27B0", percentage: 95, active: false },
+          ],
+        },
+      ];
+
+      // Current AMS unit and active spool
+      let currentAmsIndex = 0;
+      let activeSpoolId = 1;
+
+      // Initialize filament data from the first AMS unit
+      let filamentData = amsUnits[currentAmsIndex].spools;
+
+      // Initialize AMS navigation buttons
+      amsPrevBtn.addEventListener("click", () => {
+        navigateAms(-1);
+      });
+
+      amsNextBtn.addEventListener("click", () => {
+        navigateAms(1);
+      });
+
+      // Initialize AMS selector with the first AMS unit's spools
+      populateAmsSelector();
+
       // Variables
       let isPrinting = false;
       let isPaused = false;
@@ -637,6 +954,8 @@
       let tempInterval;
       let toolheadAnimationInterval;
       let toolheadPosition = 0; // Track toolhead position independently
+      let spoolRotation = 0; // For spool rotation animation
+      let spoolAnimationId = null; // For animation frame
 
       // Initial position
       const initialHeadY = 250;
@@ -646,7 +965,7 @@
 
       // Responsive scaling variables
       let svgWidth = 600;
-      let svgHeight = 700;
+      let svgHeight = 800;
       let scaleFactor = 1;
 
       // Function to update scaling factor based on current SVG size
@@ -668,6 +987,127 @@
           printHead.setAttribute("transform", `translate(300, ${initialHeadY})`);
           printBedGroup.setAttribute("transform", `translate(0, ${initialBedY})`);
           modelContainer.setAttribute("y", "0");
+        }
+      }
+
+      // Initialize AMS spools with click events
+      amsSpools.forEach((spool, index) => {
+        spool.addEventListener("click", () => {
+          if (!isPrinting) return; // Only allow changing spools during printing
+          setActiveSpool(index + 1);
+        });
+
+        // Add hover effect
+        spool.addEventListener("mouseenter", () => {
+          if (!isPrinting) return;
+          // Scale the spool slightly on hover without changing its position
+          const spoolId = index + 1;
+          const translateX = 175 + index * 80;
+          spool.setAttribute("transform", `translate(${translateX}, 110) scale(1.05)`);
+        });
+
+        spool.addEventListener("mouseleave", () => {
+          // Reset to original position and scale
+          const spoolId = index + 1;
+          const translateX = 175 + index * 80;
+          spool.setAttribute("transform", `translate(${translateX}, 110)`);
+        });
+      });
+
+      // Add hover effects to navigation buttons
+      amsPrevBtn.addEventListener("mouseenter", () => {
+        amsPrevBtn.querySelector("circle").setAttribute("fill", "#666666");
+      });
+
+      amsPrevBtn.addEventListener("mouseleave", () => {
+        amsPrevBtn.querySelector("circle").setAttribute("fill", "#444444");
+      });
+
+      amsNextBtn.addEventListener("mouseenter", () => {
+        amsNextBtn.querySelector("circle").setAttribute("fill", "#666666");
+      });
+
+      amsNextBtn.addEventListener("mouseleave", () => {
+        amsNextBtn.querySelector("circle").setAttribute("fill", "#444444");
+      });
+
+      // Function to set active spool
+      function setActiveSpool(spoolId) {
+        if (activeSpoolId === spoolId) return;
+
+        // Update data
+        filamentData.forEach((spool) => {
+          spool.active = spool.id === spoolId;
+        });
+
+        activeSpoolId = spoolId;
+
+        // Update visual indicators
+        updateAmsDisplay();
+
+        // Update filament path
+        updateFilamentPath();
+
+        // Update selector
+        amsSelect.value = spoolId.toString();
+      }
+
+      // Function to update AMS display
+      function updateAmsDisplay() {
+        filamentData.forEach((spool) => {
+          const spoolElement = document.getElementById(`spool-${spool.id}-filament`);
+          const percentageElement = document.getElementById(`spool-${spool.id}-percentage`);
+
+          // Update active status
+          if (spool.active) {
+            spoolElement.classList.add("ams-active");
+          } else {
+            spoolElement.classList.remove("ams-active");
+          }
+
+          // Update percentage
+          percentageElement.textContent = `${spool.percentage}%`;
+
+          // Update filament visualization based on percentage
+          const radius = 30 * (spool.percentage / 100);
+          spoolElement.setAttribute("r", Math.max(radius, 8)); // Minimum radius of 8
+        });
+      }
+
+      // Function to update filament path
+      function updateFilamentPath() {
+        const activeSpool = filamentData.find((spool) => spool.active);
+        const spoolX = 175 + (activeSpoolId - 1) * 80; // Calculate X position based on spool ID
+
+        // Update path - adjust Y position to match the bottom of the larger spools
+        filamentPath.setAttribute("d", `M${spoolX},140 L${spoolX},150 L300,150 L300,160`);
+        filamentPath.setAttribute("stroke", activeSpool.color);
+
+        // Update tube path
+        const tubePath = document.getElementById("filament-tube-path");
+        tubePath.setAttribute("stroke", activeSpool.color);
+      }
+
+      // Function to simulate filament usage
+      function simulateFilamentUsage() {
+        const activeSpool = filamentData.find((spool) => spool.active);
+
+        // Reduce filament percentage
+        if (activeSpool.percentage > 5) {
+          activeSpool.percentage -= 1;
+
+          // Update display
+          updateAmsDisplay();
+
+          // If filament is low, switch to another spool with more filament
+          if (activeSpool.percentage <= 10) {
+            const nextSpool = filamentData.find(
+              (spool) => spool.percentage > 30 && spool.id !== activeSpoolId
+            );
+            if (nextSpool) {
+              setActiveSpool(nextSpool.id);
+            }
+          }
         }
       }
 
@@ -703,6 +1143,14 @@
         // Only update the display if we're printing
         if (isPrinting) {
           printSpeed.textContent = `${speedLabel}`;
+        }
+      });
+
+      // AMS spool selector
+      amsSelect.addEventListener("change", function () {
+        const selectedSpoolId = parseInt(this.value);
+        if (isPrinting) {
+          setActiveSpool(selectedSpoolId);
         }
       });
 
@@ -799,6 +1247,44 @@
 
         // Start fan at 50%
         fanSpeedValue.textContent = "50%";
+
+        // Initialize AMS display
+        updateAmsDisplay();
+        updateFilamentPath();
+
+        // Start spool rotation animation
+        startSpoolRotation();
+      }
+
+      // Function to start spool rotation animation
+      function startSpoolRotation() {
+        // Cancel any existing animation
+        if (spoolAnimationId) {
+          cancelAnimationFrame(spoolAnimationId);
+        }
+
+        // Reset rotation
+        spoolRotation = 0;
+
+        // Animation function
+        function animateSpool() {
+          if (!isPrinting || isPaused) return;
+
+          // Increment rotation
+          spoolRotation = (spoolRotation + 0.5) % 360;
+
+          // Get active spool's rotating part element
+          const activeSpoolRotating = document.getElementById(`spool-${activeSpoolId}-rotating`);
+
+          // Apply rotation only to the rotating part
+          activeSpoolRotating.setAttribute("transform", `rotate(${spoolRotation})`);
+
+          // Continue animation
+          spoolAnimationId = requestAnimationFrame(animateSpool);
+        }
+
+        // Start animation
+        spoolAnimationId = requestAnimationFrame(animateSpool);
       }
 
       function pausePrint() {
@@ -808,6 +1294,8 @@
         startBtn.textContent = "Resume";
         startBtn.disabled = false;
         printStatus.textContent = "Paused";
+
+        // Pause spool rotation (animation will check isPaused flag)
       }
 
       function resumePrint() {
@@ -817,6 +1305,8 @@
         printStatus.textContent = "Printing...";
         printInterval = setInterval(updatePrint, 100);
         toolheadAnimationInterval = setInterval(updateToolheadPosition, 50);
+
+        // Resume spool rotation (animation will continue when isPaused is false)
       }
 
       function stopPrint() {
@@ -825,6 +1315,20 @@
         clearInterval(printInterval);
         clearInterval(toolheadAnimationInterval);
         clearInterval(tempInterval);
+
+        // Stop spool rotation
+        if (spoolAnimationId) {
+          cancelAnimationFrame(spoolAnimationId);
+          spoolAnimationId = null;
+        }
+
+        // Reset spool rotations
+        for (let i = 1; i <= 4; i++) {
+          const spoolRotating = document.getElementById(`spool-${i}-rotating`);
+          if (spoolRotating) {
+            spoolRotating.setAttribute("transform", "");
+          }
+        }
 
         // Reset UI
         startBtn.textContent = "Start Print";
@@ -908,6 +1412,11 @@
         const timeText = `${hoursRemaining}h ${minutesRemaining}m`;
         timeRemaining.textContent = timeText;
         displayTime.textContent = timeText;
+
+        // Simulate filament usage every 5% of progress
+        if (Math.floor(progress) % 5 === 0 && Math.floor(progress) !== Math.floor(progress - 0.2)) {
+          simulateFilamentUsage();
+        }
       }
 
       function completePrint() {
@@ -1075,6 +1584,53 @@
           doorClosedIcon.setAttribute("opacity", "1");
           doorOpenIcon.setAttribute("opacity", "0");
         }
+      }
+
+      // Function to navigate between AMS units
+      function navigateAms(direction) {
+        // Calculate new index with wrap-around
+        const newIndex = (currentAmsIndex + direction + amsUnits.length) % amsUnits.length;
+
+        // Update current index
+        currentAmsIndex = newIndex;
+
+        // Update filament data
+        filamentData = amsUnits[currentAmsIndex].spools;
+
+        // Update AMS indicator
+        amsIndicator.textContent = `AMS ${currentAmsIndex + 1} of ${amsUnits.length}`;
+
+        // Reset active spool to the first one in the new AMS
+        activeSpoolId = 1;
+        filamentData.forEach((spool, index) => {
+          spool.active = index === 0;
+        });
+
+        // Update display
+        updateAmsDisplay();
+        updateFilamentPath();
+
+        // Update selector
+        populateAmsSelector();
+      }
+
+      // Function to populate AMS selector with current AMS spools
+      function populateAmsSelector() {
+        // Clear existing options
+        amsSelect.innerHTML = "";
+
+        // Add options for current AMS spools
+        filamentData.forEach((spool) => {
+          const option = document.createElement("option");
+          option.value = spool.id;
+          option.textContent = spool.name;
+          option.selected = spool.active;
+
+          // Set background color based on filament color
+          option.style.backgroundColor = `${spool.color}33`; // Add transparency
+
+          amsSelect.appendChild(option);
+        });
       }
     </script>
   </body>
