@@ -1,0 +1,1044 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bambu Lab X1C 3D Printer Visualization</title>
+    <!-- Preload Material Design Icons font -->
+    <link rel="preload" href="https://fonts.googleapis.com/icon?family=Material+Icons" as="style" />
+    <!-- Add Material Design Icons CDN -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <!-- Add Material Design Icons Extended for more icon options -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        background-color: #f0f0f0;
+      }
+
+      .container {
+        text-align: center;
+        max-width: 800px;
+      }
+
+      .printer-container {
+        position: relative;
+        width: 600px;
+        height: 700px;
+        margin: 0 auto;
+      }
+
+      .printer-info {
+        display: none; /* Hide the info box */
+      }
+
+      .controls {
+        margin-top: 20px;
+      }
+
+      button {
+        padding: 10px 15px;
+        margin: 0 5px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #45a049;
+      }
+
+      .progress-container {
+        margin-top: 20px;
+        width: 100%;
+        background-color: #ddd;
+        border-radius: 4px;
+      }
+
+      .progress-bar {
+        height: 20px;
+        background-color: #4caf50;
+        border-radius: 4px;
+        width: 0%;
+        transition: width 0.5s;
+      }
+
+      #print-status {
+        margin-top: 10px;
+        font-weight: bold;
+      }
+
+      .model-container {
+        clip-path: polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%);
+        transition: clip-path 0.5s ease-in-out;
+      }
+
+      /* Hide model initially */
+      #model-image {
+        opacity: 0;
+      }
+
+      .chamber-light {
+        transition: opacity 0.3s ease-in-out;
+      }
+
+      .light-button {
+        padding: 8px 12px;
+        margin: 0 5px;
+        background-color: #2196f3;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .light-button:hover {
+        background-color: #0b7dda;
+      }
+
+      .light-button:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+      }
+
+      .speed-selector {
+        display: inline-block;
+        margin-left: 10px;
+        vertical-align: middle;
+      }
+
+      .speed-selector select {
+        padding: 6px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        background-color: #f8f8f8;
+        font-size: 14px;
+      }
+
+      .speed-label {
+        margin-right: 5px;
+        font-weight: bold;
+        color: #333;
+      }
+
+      /* SVG Material Icon styling */
+      #fan-icon,
+      #door-closed-icon,
+      #door-open-icon {
+        transition:
+          opacity 0.3s ease,
+          fill 0.3s ease;
+      }
+
+      #fan-icon {
+        transition:
+          transform 0.05s linear,
+          fill 0.3s ease;
+      }
+
+      .model-container {
+        clip-path: polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%);
+        transition: clip-path 0.5s ease-in-out;
+      }
+
+      /* Hide model initially */
+      #model-image {
+        opacity: 0;
+      }
+
+      .chamber-light {
+        transition: opacity 0.3s ease-in-out;
+      }
+
+      .light-button {
+        padding: 8px 12px;
+        margin: 0 5px;
+        background-color: #2196f3;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .light-button:hover {
+        background-color: #0b7dda;
+      }
+
+      .light-button:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+      }
+
+      .speed-selector {
+        display: inline-block;
+        margin-left: 10px;
+        vertical-align: middle;
+      }
+
+      .speed-selector select {
+        padding: 6px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        background-color: #f8f8f8;
+        font-size: 14px;
+      }
+
+      .speed-label {
+        margin-right: 5px;
+        font-weight: bold;
+        color: #333;
+      }
+
+      /* Remove unused Material icons styling */
+      /* .material-icons {
+        font-size: 28px;
+        color: #999999;
+        transition:
+          transform 0.2s ease,
+          color 0.3s ease;
+      }
+
+      .material-icons:hover {
+        color: #bbbbbb;
+      }
+
+      .status-icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 40px;
+      }
+
+      #fan-icon {
+        transform-origin: center;
+        transition: transform 0.05s linear;
+      }
+
+      #door-closed-icon,
+      #door-open-icon {
+        font-size: 30px;
+      } */
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Bambu Lab X1C 3D Printer Visualization</h1>
+
+      <div class="printer-container">
+        <svg width="600" height="700" viewBox="0 0 600 700" xmlns="http://www.w3.org/2000/svg">
+          <!-- Printer Base -->
+          <rect x="100" y="600" width="400" height="30" fill="#888888" rx="5" ry="5" />
+
+          <!-- Printer Body -->
+          <rect x="120" y="150" width="360" height="450" fill="#CCCCCC" rx="10" ry="10" />
+
+          <!-- Printer Frame -->
+          <rect x="130" y="160" width="340" height="430" fill="#333333" rx="5" ry="5" />
+
+          <!-- Printer Chamber -->
+          <rect
+            id="print-chamber"
+            x="150"
+            y="180"
+            width="300"
+            height="390"
+            fill="#222222"
+            rx="5"
+            ry="5"
+          />
+
+          <!-- Chamber Light Effect - Simple solid color overlay -->
+          <rect
+            id="chamber-light"
+            x="155"
+            y="185"
+            width="290"
+            height="380"
+            fill="rgba(255, 255, 255, 0.05)"
+            rx="3"
+            ry="3"
+            opacity="0"
+            class="chamber-light"
+          />
+
+          <!-- Chamber Temperature Display - Inside chamber at top right -->
+          <rect x="400" y="185" width="40" height="30" fill="#111111" rx="2" ry="2" />
+          <text
+            id="display-chamber-temp"
+            x="420"
+            y="205"
+            fill="#FF9900"
+            text-anchor="middle"
+            font-size="12"
+            font-family="monospace"
+          >
+            25°C
+          </text>
+
+          <!-- NEW Info Panel on the right side of the printer -->
+          <rect x="490" y="200" width="70" height="200" fill="#333333" rx="5" ry="5" />
+          <rect x="495" y="205" width="60" height="190" fill="#222222" rx="3" ry="3" />
+
+          <!-- Title -->
+          <text
+            x="525"
+            y="225"
+            fill="#FFFFFF"
+            text-anchor="middle"
+            font-size="12"
+            font-family="Arial, sans-serif"
+            font-weight="bold"
+          >
+            STATUS
+          </text>
+
+          <!-- Door Status Section -->
+          <rect x="500" y="235" width="50" height="70" fill="#111111" rx="3" ry="3" />
+
+          <!-- Door Icons - Using SVG text with Material Icons font -->
+          <text
+            id="door-closed-icon"
+            x="525"
+            y="265"
+            fill="#00CC00"
+            text-anchor="middle"
+            font-size="30"
+            font-family="'Material Icons'"
+            style="dominant-baseline: middle"
+          >
+            meeting_room
+          </text>
+
+          <text
+            id="door-open-icon"
+            x="525"
+            y="265"
+            fill="#FF3333"
+            text-anchor="middle"
+            font-size="30"
+            font-family="'Material Icons'"
+            style="dominant-baseline: middle; opacity: 0"
+          >
+            sensor_door
+          </text>
+
+          <!-- Door Status Text -->
+          <text
+            id="door-status"
+            x="525"
+            y="295"
+            fill="#00FF00"
+            text-anchor="middle"
+            font-size="12"
+            font-family="monospace"
+            font-weight="bold"
+          >
+            CLOSED
+          </text>
+
+          <!-- Fan Speed Section -->
+          <rect x="500" y="315" width="50" height="70" fill="#111111" rx="3" ry="3" />
+
+          <!-- Fan Icon - Using Material Design "fan" icon -->
+          <g id="fan-icon-group" transform="translate(525, 345)">
+            <text
+              id="fan-icon"
+              x="0"
+              y="0"
+              fill="#999999"
+              text-anchor="middle"
+              font-size="30"
+              font-family="'Material Icons'"
+              style="dominant-baseline: middle"
+            >
+              fan
+            </text>
+          </g>
+
+          <!-- Fan Speed Text -->
+          <text
+            id="fan-speed-value"
+            x="525"
+            y="375"
+            fill="#FF9900"
+            text-anchor="middle"
+            font-size="12"
+            font-family="monospace"
+            font-weight="bold"
+          >
+            50%
+          </text>
+
+          <!-- Light Gradient Definition -->
+          <defs>
+            <!-- Light Bulb Icon -->
+            <symbol id="light-bulb-icon" viewBox="0 0 24 24">
+              <path
+                d="M12,2C8.13,2 5,5.13 5,9c0,2.38 1.19,4.47 3,5.74V17c0,0.55 0.45,1 1,1h6c0.55,0 1,-0.45 1,-1v-2.26c1.81,-1.27 3,-3.36 3,-5.74c0,-3.87 -3.13,-7 -7,-7zm-1,14h2v1h-2v-1zm0,-4h2v2h-2v-2z"
+              />
+            </symbol>
+          </defs>
+
+          <!-- Light Source - Light Bulb Icon - Moved even further to the left side -->
+          <g id="light-source" opacity="0" transform="translate(145, 375)">
+            <use href="#light-bulb-icon" width="24" height="24" fill="#FFEB3B" />
+            <circle cx="12" cy="12" r="20" fill="rgba(255, 255, 255, 0.15)" />
+          </g>
+
+          <!-- Print Bed -->
+          <g id="print-bed-group" transform="translate(0, 280)">
+            <!-- Main bed plate -->
+            <rect
+              id="print-bed"
+              x="170"
+              y="0"
+              width="260"
+              height="20"
+              fill="#444444"
+              rx="2"
+              ry="2"
+            />
+
+            <!-- Bed temperature display -->
+            <rect x="180" y="5" width="50" height="10" fill="#222222" rx="2" ry="2" />
+            <text
+              id="bed-temp-display"
+              x="205"
+              y="13"
+              fill="#FF9900"
+              text-anchor="middle"
+              font-size="8"
+              font-family="monospace"
+            >
+              60°C
+            </text>
+
+            <!-- Bed surface texture -->
+            <line
+              x1="190"
+              y1="2"
+              x2="410"
+              y2="2"
+              stroke="#555555"
+              stroke-width="0.5"
+              stroke-dasharray="5,5"
+            />
+            <line
+              x1="190"
+              y1="7"
+              x2="410"
+              y2="7"
+              stroke="#555555"
+              stroke-width="0.5"
+              stroke-dasharray="5,5"
+            />
+            <line
+              x1="190"
+              y1="12"
+              x2="410"
+              y2="12"
+              stroke="#555555"
+              stroke-width="0.5"
+              stroke-dasharray="5,5"
+            />
+            <line
+              x1="190"
+              y1="17"
+              x2="410"
+              y2="17"
+              stroke="#555555"
+              stroke-width="0.5"
+              stroke-dasharray="5,5"
+            />
+          </g>
+
+          <!-- Print Model Container - positioned directly on the bed -->
+          <foreignObject
+            id="model-container"
+            x="170"
+            y="0"
+            width="260"
+            height="250"
+            class="model-container"
+          >
+            <div
+              xmlns="http://www.w3.org/1999/xhtml"
+              style="
+                width: 100%;
+                height: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: flex-end;
+              "
+            >
+              <img
+                id="model-image"
+                src="https://cdn-icons-png.flaticon.com/512/4616/4616734.png"
+                alt="3D Model"
+                style="max-width: 100%; max-height: 100%"
+              />
+            </div>
+          </foreignObject>
+
+          <!-- X-Axis Rail - Positioned before the toolhead so it appears behind it -->
+          <rect x="150" y="240" width="300" height="5" fill="#555555" />
+
+          <!-- Y-Axis Rails -->
+          <rect x="145" y="180" width="5" height="390" fill="#555555" />
+          <rect x="450" y="180" width="5" height="390" fill="#555555" />
+
+          <!-- Print Head - Now defined after the rail so it appears in front -->
+          <g id="print-head" transform="translate(300, 250)">
+            <!-- Main toolhead body -->
+            <rect x="-25" y="-60" width="50" height="70" fill="#666666" rx="5" ry="5" />
+
+            <!-- Upper section -->
+            <rect x="-20" y="-75" width="40" height="15" fill="#777777" rx="3" ry="3" />
+
+            <!-- Middle section with cooling fins -->
+            <rect x="-22" y="-40" width="44" height="30" fill="#555555" rx="2" ry="2" />
+            <rect x="-18" y="-38" width="36" height="3" fill="#444444" />
+            <rect x="-18" y="-33" width="36" height="3" fill="#444444" />
+            <rect x="-18" y="-28" width="36" height="3" fill="#444444" />
+            <rect x="-18" y="-23" width="36" height="3" fill="#444444" />
+            <rect x="-18" y="-18" width="36" height="3" fill="#444444" />
+
+            <!-- Lower nozzle section -->
+            <rect x="-15" y="10" width="30" height="15" fill="#555555" rx="2" ry="2" />
+            <rect x="-8" y="25" width="16" height="5" fill="#333333" rx="1" ry="1" />
+
+            <!-- Nozzle tip -->
+            <circle cx="0" cy="30" r="3" fill="#FF0000" />
+
+            <!-- Status light -->
+            <circle cx="15" cy="-50" r="4" fill="#00FF00" />
+
+            <!-- Temperature display on toolhead -->
+            <rect x="-22" y="-55" width="44" height="12" fill="#111111" rx="2" ry="2" />
+            <text
+              id="toolhead-temp"
+              x="0"
+              y="-46"
+              fill="#FF9900"
+              text-anchor="middle"
+              font-size="9"
+              font-family="monospace"
+            >
+              220°C
+            </text>
+          </g>
+
+          <!-- Top Display Screen - Taller, narrower, and connected to printer top -->
+          <rect x="150" y="110" width="120" height="70" fill="#666666" rx="3" ry="3" />
+          <!-- Grey border -->
+          <rect x="155" y="115" width="110" height="60" fill="#000000" rx="2" ry="2" />
+          <!-- Black screen -->
+          <text
+            id="display-time"
+            x="210"
+            y="150"
+            fill="#FF9900"
+            text-anchor="middle"
+            font-size="18"
+            font-family="monospace"
+          >
+            2h 15m
+          </text>
+
+          <!-- Removed Bambu Lab text -->
+        </svg>
+
+        <div class="printer-info">
+          <div id="temperature-info">
+            <p>Chamber Temp: <span id="chamber-temp">25°C</span></p>
+          </div>
+          <div id="print-info">
+            <p>Material: PLA</p>
+            <p>Layer Height: 0.2mm</p>
+            <p>Print Speed: <span id="print-speed">100%</span></p>
+            <p>Time Remaining: <span id="time-remaining">2h 15m</span></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="start-btn">Start Print</button>
+        <button id="pause-btn" disabled>Pause</button>
+        <button id="stop-btn" disabled>Stop</button>
+        <button id="light-btn" class="light-button">Light: OFF</button>
+        <div class="speed-selector">
+          <span class="speed-label">Speed:</span>
+          <select id="speed-select">
+            <option value="1">Quiet</option>
+            <option value="2">Standard</option>
+            <option value="3">Sport</option>
+            <option value="5" selected>Ludicrous</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div id="progress-bar" class="progress-bar"></div>
+      </div>
+
+      <p id="print-status">Ready to print</p>
+    </div>
+
+    <script>
+      // Elements
+      const printHead = document.getElementById("print-head");
+      const printBedGroup = document.getElementById("print-bed-group");
+      const printBed = document.getElementById("print-bed");
+      const bedTempDisplay = document.getElementById("bed-temp-display");
+      const modelContainer = document.getElementById("model-container");
+      const modelImage = document.getElementById("model-image");
+      const progressBar = document.getElementById("progress-bar");
+      const printStatus = document.getElementById("print-status");
+      const startBtn = document.getElementById("start-btn");
+      const pauseBtn = document.getElementById("pause-btn");
+      const stopBtn = document.getElementById("stop-btn");
+      const lightBtn = document.getElementById("light-btn");
+      const speedSelect = document.getElementById("speed-select");
+      const chamberLight = document.getElementById("chamber-light");
+      const lightSource = document.getElementById("light-source");
+      const printChamber = document.getElementById("print-chamber");
+      const toolheadTemp = document.getElementById("toolhead-temp");
+      const chamberTemp = document.getElementById("chamber-temp");
+      const printSpeed = document.getElementById("print-speed");
+      const timeRemaining = document.getElementById("time-remaining");
+      const displayTime = document.getElementById("display-time");
+      const fanSpeedValue = document.getElementById("fan-speed-value");
+      const doorStatus = document.getElementById("door-status");
+
+      // Variables
+      let isPrinting = false;
+      let isPaused = false;
+      let isLightOn = false;
+      let progress = 0;
+      let printInterval;
+      let tempInterval;
+      let toolheadAnimationInterval;
+      let toolheadPosition = 0; // Track toolhead position independently
+
+      // Initial position
+      const initialHeadY = 250;
+      const initialBedY = 280; // Bed starts at the top near the toolhead nozzle
+      const bedRange = 250; // Total distance the bed can move down
+      let toolheadSpeed = 5; // Speed of toolhead movement (pixels per frame) - default to Ludicrous
+
+      // Position model container at the bed level
+      modelContainer.setAttribute("y", "0");
+
+      // Light control
+      lightBtn.addEventListener("click", toggleLight);
+
+      // Speed control
+      speedSelect.addEventListener("change", function () {
+        toolheadSpeed = parseInt(this.value);
+
+        // Update the print speed display to match the selected speed
+        let speedLabel;
+        switch (toolheadSpeed) {
+          case 1:
+            speedLabel = "Quiet";
+            break;
+          case 2:
+            speedLabel = "Standard";
+            break;
+          case 3:
+            speedLabel = "Sport";
+            break;
+          case 5:
+            speedLabel = "Ludicrous";
+            break;
+          default:
+            speedLabel = "Custom";
+        }
+
+        // Only update the display if we're printing
+        if (isPrinting) {
+          printSpeed.textContent = `${speedLabel}`;
+        }
+      });
+
+      function toggleLight() {
+        isLightOn = !isLightOn;
+
+        if (isLightOn) {
+          // Turn on light
+          chamberLight.setAttribute("opacity", "1");
+          lightSource.setAttribute("opacity", "1");
+          lightBtn.textContent = "Light: ON";
+        } else {
+          // Turn off light
+          chamberLight.setAttribute("opacity", "0");
+          lightSource.setAttribute("opacity", "0");
+          lightBtn.textContent = "Light: OFF";
+        }
+      }
+
+      // Start print
+      startBtn.addEventListener("click", () => {
+        if (!isPrinting) {
+          startPrint();
+        } else if (isPaused) {
+          resumePrint();
+        }
+      });
+
+      // Pause print
+      pauseBtn.addEventListener("click", () => {
+        if (isPrinting && !isPaused) {
+          pausePrint();
+        }
+      });
+
+      // Stop print
+      stopBtn.addEventListener("click", () => {
+        if (isPrinting) {
+          stopPrint();
+        }
+      });
+
+      function startPrint() {
+        isPrinting = true;
+        isPaused = false;
+        progress = 0;
+        toolheadPosition = 0;
+
+        // Show the model image
+        modelImage.style.opacity = "1";
+
+        // Update UI
+        startBtn.disabled = true;
+        pauseBtn.disabled = false;
+        stopBtn.disabled = false;
+        printStatus.textContent = "Printing...";
+
+        // Start temperature simulation
+        startTempSimulation();
+
+        // Start print animation
+        printInterval = setInterval(updatePrint, 100);
+
+        // Start toolhead animation at a consistent speed
+        toolheadAnimationInterval = setInterval(updateToolheadPosition, 50);
+
+        // Set initial print speed display based on selected speed
+        let speedLabel;
+        switch (toolheadSpeed) {
+          case 1:
+            speedLabel = "Quiet";
+            break;
+          case 2:
+            speedLabel = "Standard";
+            break;
+          case 3:
+            speedLabel = "Sport";
+            break;
+          case 5:
+            speedLabel = "Ludicrous";
+            break;
+          default:
+            speedLabel = "Custom";
+        }
+        printSpeed.textContent = speedLabel;
+
+        // Turn on light automatically when printing starts
+        if (!isLightOn) {
+          toggleLight();
+        }
+
+        // Reset display time
+        displayTime.textContent = "2h 15m";
+
+        // Start fan at 50%
+        fanSpeedValue.textContent = "50%";
+      }
+
+      function pausePrint() {
+        isPaused = true;
+        clearInterval(printInterval);
+        clearInterval(toolheadAnimationInterval);
+        startBtn.textContent = "Resume";
+        startBtn.disabled = false;
+        printStatus.textContent = "Paused";
+      }
+
+      function resumePrint() {
+        isPaused = false;
+        startBtn.textContent = "Start Print";
+        startBtn.disabled = true;
+        printStatus.textContent = "Printing...";
+        printInterval = setInterval(updatePrint, 100);
+        toolheadAnimationInterval = setInterval(updateToolheadPosition, 50);
+      }
+
+      function stopPrint() {
+        isPrinting = false;
+        isPaused = false;
+        clearInterval(printInterval);
+        clearInterval(toolheadAnimationInterval);
+        clearInterval(tempInterval);
+
+        // Reset UI
+        startBtn.textContent = "Start Print";
+        startBtn.disabled = false;
+        pauseBtn.disabled = true;
+        stopBtn.disabled = true;
+        printStatus.textContent = "Ready to print";
+        progressBar.style.width = "0%";
+
+        // Reset positions
+        printHead.setAttribute("transform", `translate(300, ${initialHeadY})`);
+        printBedGroup.setAttribute("transform", `translate(0, ${initialBedY})`);
+        modelContainer.setAttribute("y", "0");
+        modelContainer.style.clipPath = "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)";
+
+        // Reset variables
+        toolheadPosition = 0;
+
+        // Hide the model image
+        modelImage.style.opacity = "0";
+
+        // Reset temperatures
+        toolheadTemp.textContent = "25°C";
+        bedTempDisplay.textContent = "25°C";
+        chamberTemp.textContent = "25°C";
+        timeRemaining.textContent = "2h 15m";
+
+        // Reset fan speed
+        fanSpeedValue.textContent = "0%";
+
+        // Turn off light when print is stopped
+        if (isLightOn) {
+          toggleLight();
+        }
+
+        // Reset display time
+        displayTime.textContent = "2h 15m";
+      }
+
+      // Separate function to update toolhead position at a consistent speed
+      function updateToolheadPosition() {
+        if (!isPrinting || isPaused) return;
+
+        // Update toolhead position (moves in a sine wave pattern)
+        toolheadPosition += toolheadSpeed;
+
+        // Calculate X position based on sine wave with a range of 100px
+        const headX = 300 + Math.sin(toolheadPosition / 100) * 100;
+
+        // Update toolhead position
+        printHead.setAttribute("transform", `translate(${headX}, ${initialHeadY})`);
+      }
+
+      function updatePrint() {
+        progress += 0.2;
+        if (progress >= 100) {
+          completePrint();
+          return;
+        }
+
+        // Update progress bar
+        progressBar.style.width = `${progress}%`;
+
+        // Move print bed down (Y-axis) - bed moves DOWN as print progresses
+        const bedY = initialBedY + (bedRange * progress) / 100;
+        printBedGroup.setAttribute("transform", `translate(0, ${bedY})`);
+
+        // Move the model container with the bed
+        const modelY = bedY - 250; // Position model above the bed
+        modelContainer.setAttribute("y", modelY);
+
+        // Update model reveal (clip-path) - reveal from bottom up
+        const revealPercentage = progress;
+        modelContainer.style.clipPath = `polygon(0% ${100 - revealPercentage}%, 100% ${100 - revealPercentage}%, 100% 100%, 0% 100%)`;
+
+        // Update time remaining
+        const hoursRemaining = Math.floor(((100 - progress) / 100) * 2.25);
+        const minutesRemaining = Math.floor(
+          (((100 - progress) / 100) * 2.25 - hoursRemaining) * 60
+        );
+        const timeText = `${hoursRemaining}h ${minutesRemaining}m`;
+        timeRemaining.textContent = timeText;
+        displayTime.textContent = timeText;
+      }
+
+      function completePrint() {
+        clearInterval(printInterval);
+        clearInterval(toolheadAnimationInterval);
+        clearInterval(tempInterval);
+        isPrinting = false;
+
+        // Update UI
+        progressBar.style.width = "100%";
+        printStatus.textContent = "Print completed!";
+        startBtn.disabled = false;
+        pauseBtn.disabled = true;
+        stopBtn.disabled = true;
+
+        // Cool down temperatures
+        coolDown();
+      }
+
+      function startTempSimulation() {
+        // Warm up
+        let currentNozzleTemp = 25;
+        let currentBedTemp = 25;
+        let currentChamberTemp = 25;
+        let targetNozzleTemp = 220;
+        let targetBedTemp = 60;
+        let targetChamberTemp = 35;
+        let currentFanSpeed = 0;
+        let targetFanSpeed = 50;
+        let fanRotation = 0;
+        let fanInterval;
+
+        tempInterval = setInterval(() => {
+          // Warm up nozzle
+          if (currentNozzleTemp < targetNozzleTemp) {
+            currentNozzleTemp += 5;
+            if (currentNozzleTemp > targetNozzleTemp) currentNozzleTemp = targetNozzleTemp;
+          }
+
+          // Warm up bed
+          if (currentBedTemp < targetBedTemp) {
+            currentBedTemp += 2;
+            if (currentBedTemp > targetBedTemp) currentBedTemp = targetBedTemp;
+          }
+
+          // Warm up chamber
+          if (currentChamberTemp < targetChamberTemp) {
+            currentChamberTemp += 1;
+            if (currentChamberTemp > targetChamberTemp) currentChamberTemp = targetChamberTemp;
+          }
+
+          // Ramp up fan speed
+          if (currentFanSpeed < targetFanSpeed) {
+            currentFanSpeed += 5;
+            if (currentFanSpeed > targetFanSpeed) currentFanSpeed = targetFanSpeed;
+
+            // Start fan animation if not already started
+            if (currentFanSpeed > 0 && !fanInterval) {
+              // Use requestAnimationFrame for smoother animation
+              const fanIconGroup = document.getElementById("fan-icon-group");
+
+              const animateFan = () => {
+                // Rotation speed is proportional to fan speed
+                // Multiply by a factor to make the difference more noticeable
+                const speedFactor = currentFanSpeed / 10;
+                fanRotation = (fanRotation + speedFactor) % 360;
+
+                // Rotate the group around its center
+                fanIconGroup.setAttribute(
+                  "transform",
+                  `translate(525, 345) rotate(${fanRotation})`
+                );
+
+                // Only continue animation if fan speed > 0
+                if (currentFanSpeed > 0) {
+                  requestAnimationFrame(animateFan);
+                }
+              };
+
+              // Start the animation
+              requestAnimationFrame(animateFan);
+
+              // Store the animation function for potential cancellation
+              fanInterval = true;
+            }
+          }
+
+          // Update display
+          toolheadTemp.textContent = `${currentNozzleTemp}°C`;
+          bedTempDisplay.textContent = `${currentBedTemp}°C`;
+          chamberTemp.textContent = `${currentChamberTemp}°C`;
+          document.getElementById("display-chamber-temp").textContent = `${currentChamberTemp}°C`;
+          fanSpeedValue.textContent = `${currentFanSpeed}%`;
+
+          // Randomly toggle door status for demo purposes (1% chance per update)
+          if (Math.random() < 0.01) {
+            toggleDoorStatus();
+          }
+        }, 500);
+      }
+
+      function coolDown() {
+        let currentNozzleTemp = 220;
+        let currentBedTemp = 60;
+        let currentChamberTemp = 35;
+        let currentFanSpeed = 50;
+
+        const coolDownInterval = setInterval(() => {
+          // Cool down nozzle
+          if (currentNozzleTemp > 25) {
+            currentNozzleTemp -= 5;
+            if (currentNozzleTemp < 25) currentNozzleTemp = 25;
+          }
+
+          // Cool down bed
+          if (currentBedTemp > 25) {
+            currentBedTemp -= 2;
+            if (currentBedTemp < 25) currentBedTemp = 25;
+          }
+
+          // Cool down chamber
+          if (currentChamberTemp > 25) {
+            currentChamberTemp -= 1;
+            if (currentChamberTemp < 25) currentChamberTemp = 25;
+          }
+
+          // Ramp down fan speed
+          if (currentFanSpeed > 0) {
+            currentFanSpeed -= 5;
+            if (currentFanSpeed < 0) currentFanSpeed = 0;
+          }
+
+          // Update display
+          toolheadTemp.textContent = `${currentNozzleTemp}°C`;
+          bedTempDisplay.textContent = `${currentBedTemp}°C`;
+          chamberTemp.textContent = `${currentChamberTemp}°C`;
+          document.getElementById("display-chamber-temp").textContent = `${currentChamberTemp}°C`;
+          fanSpeedValue.textContent = `${currentFanSpeed}%`;
+
+          // Stop when cooled down
+          if (
+            currentNozzleTemp === 25 &&
+            currentBedTemp === 25 &&
+            currentChamberTemp === 25 &&
+            currentFanSpeed === 0
+          ) {
+            clearInterval(coolDownInterval);
+          }
+        }, 500);
+      }
+
+      // Function to toggle door status
+      function toggleDoorStatus() {
+        const doorClosedIcon = document.getElementById("door-closed-icon");
+        const doorOpenIcon = document.getElementById("door-open-icon");
+
+        if (doorStatus.textContent === "CLOSED") {
+          doorStatus.textContent = "OPEN";
+          doorStatus.setAttribute("fill", "#FF3333"); // Red for open
+          doorClosedIcon.setAttribute("opacity", "0");
+          doorOpenIcon.setAttribute("opacity", "1");
+        } else {
+          doorStatus.textContent = "CLOSED";
+          doorStatus.setAttribute("fill", "#00FF00"); // Green for closed
+          doorClosedIcon.setAttribute("opacity", "1");
+          doorOpenIcon.setAttribute("opacity", "0");
+        }
+      }
+    </script>
+  </body>
+</html>
