@@ -41,6 +41,8 @@ export class AMSPopup extends LitElement {
   @state()
   private filamentData: FilamentInfo[] = [];
 
+  private is_bambu_lab: boolean = true;
+
   constructor() {
     super();
     this.filamentData = [];
@@ -56,6 +58,7 @@ export class AMSPopup extends LitElement {
   }
 
   firstUpdated() {
+    this.is_bambu_lab = this.hass.entities[this.entity_id].platform == 'bambu_lab';
     this.color = this.hass.states[this.entity_id].attributes.color.substring(0,7);
   }
 
@@ -64,8 +67,10 @@ export class AMSPopup extends LitElement {
   }
 
   async #asyncHandleClick() {
-    const result = await getFilamentData(this.hass, this.entity_id);
-    this.filamentData = result.response;
+    if (this.is_bambu_lab) {
+      const result = await getFilamentData(this.hass, this.entity_id);
+      this.filamentData = result.response;
+    }
     this.#handleReset();
     this._dialogOpen = true;
   }
@@ -109,6 +114,8 @@ export class AMSPopup extends LitElement {
   }
 
   #isSetEnabled() {
+    //console.log(this.hass.states[this.entity_id].attributes)
+    //console.log(this.selectedFilament)
     return this.color.toUpperCase() != this.hass.states[this.entity_id].attributes.color.substring(0,7).toUpperCase() ||
            this.selectedFilament.nozzle_temperature_range_low != this.hass.states[this.entity_id].attributes.nozzle_temp_min ||
            this.selectedFilament.nozzle_temperature_range_high != this.hass.states[this.entity_id].attributes.nozzle_temp_max ||
@@ -134,7 +141,8 @@ export class AMSPopup extends LitElement {
   }
 
   async #handleReset() {
-    this.tray_info_idx = this.hass.states[this.entity_id].attributes.filament_id;
+    this.tray_info_idx = this.hass.states[this.entity_id].attributes.tray_info_idx || 
+                         this.hass.states[this.entity_id].attributes.filament_id;
     if (!this.filamentData[this.tray_info_idx]) {
       const customFilament = {
         name: `Custom: ${this.tray_info_idx}`,
@@ -188,6 +196,10 @@ export class AMSPopup extends LitElement {
       }, 2000);
     }
   }
+
+  async #closePopup() {
+    this._dialogOpen = false;
+  }
   
   static styles = styles;
 
@@ -218,26 +230,7 @@ export class AMSPopup extends LitElement {
           <div slot="title">${this.hass.states[this.entity_id].attributes.friendly_name}</div>
         </ha-dialog-header>
         <div class="ha-bambulab-spool-modal-container">
-          <div class="filament-title section-title">Filament Information</div>
-          <div class="filament-type item-title">Filament Type</div>
-          <select class="filament-type item-value"
-              @change="${this.#onFilamentTypeChange}">
-              ${this.#generateFilamentTypeOptions()}
-          </select>
-          <div class="filament-name item-title">Filament</div>
-          <select class="filament-name item-value" 
-              @change="${this.#onFilamentNameChange}">
-              ${this.#generateFilamentNameOptions()}
-          </select>
-          <div class="div4 item-title">Color</div>
-          <div class="div4 item-value">
-            <input
-              type="color"
-              style="padding: 0px 0px; border-radius: 5px;"
-              .value="${this.hass.states[this.entity_id].attributes.color.substring(0,7)}"
-              @input="${this.#handleColorChange}"
-            />
-          </div>
+          ${this.#populateFilamentInfo()}
           <div class="div6 section-title">Nozzle Temperature</div>
           <div class="div7 item-title">Minimum</div>
           <div class="div7 item-value">
@@ -247,58 +240,134 @@ export class AMSPopup extends LitElement {
           <div class="div9 item-value ">
             ${this.selectedFilament.nozzle_temperature_range_high}
           </div>
-          <div class="action-buttons">
-            ${this.#isSetEnabled() ? 
-            html`
-              <mwc-button
-                id="confirm"
-                class="action-button" 
-                @click=${this.#handleSet}
-              >
-                Confirm
-              </mwc-button>
-              <mwc-button
-                id="reset"
-                class="action-button" 
-                @click=${this.#handleReset}
-              >
-                Reset
-              </mwc-button>
-            ` : 
-            html`
-            <mwc-button
-              id="load"
-              class="action-button" 
-              @click=${this.#handleLoad}
-              ?disabled=${!this.#isLoadButtonEnabled()}
-            >
-              ${this._loadState === "loading" 
-                ? html`<ha-circular-progress active size="small"></ha-circular-progress>Loading` 
-                : this._loadState === "success"
-                ? html`<ha-icon icon="mdi:check" style="color: var(--success-color)"></ha-icon>Load`
-                : this._loadState === "error"
-                ? html`<ha-icon icon="mdi:close" style="color: var(--error-color)"></ha-icon>Load`
-                : "Load"
-              }
-            </mwc-button>
-            <mwc-button
-              id="unload"
-              class="action-button" 
-              @click=${this.#handleUnload}
-              ?disabled=${!this.#isUnloadButtonEnabled()}
-            >
-              ${this._loadState === "unloading" 
-                ? html`<ha-circular-progress active size="small"></ha-circular-progress>Unloading` 
-                : this._loadState === "success"
-                ? html`<ha-icon icon="mdi:check" style="color: var(--success-color)"></ha-icon>Unload`
-                : this._loadState === "error"
-                ? html`<ha-icon icon="mdi:close" style="color: var(--error-color)"></ha-icon> Unload`
-                : "Unload"
-              }
-            </mwc-button>
-            `}
-          </div>
+          ${this.#populateActionButtons()}
       </ha-dialog>
     `;
   }
-}
+
+  #populateFilamentInfo() {
+    if (this.is_bambu_lab) {
+      return html`
+        <div class="filament-title section-title">Filament Information</div>
+        <div class="filament-type item-title">Filament Type</div>
+        <select class="filament-type item-value"
+            @change="${this.#onFilamentTypeChange}">
+            ${this.#generateFilamentTypeOptions()}
+        </select>
+        <div class="filament-name item-title">Filament</div>
+        <select class="filament-name item-value" 
+            @change="${this.#onFilamentNameChange}">
+            ${this.#generateFilamentNameOptions()}
+        </select>
+        <div class="div4 item-title">Color</div>
+        <div class="div4 item-value">
+          <input
+            type="color"
+            style="padding: 0px 0px; border-radius: 5px;"
+            .value="${this.hass.states[this.entity_id].attributes.color.substring(0,7)}"
+            @input="${this.#handleColorChange}"
+          />
+        </div>
+      `;
+    }
+    else {
+      return html`
+        <div class="filament-title section-title">Filament Information</div>
+        <div class="filament-type item-title">Filament Type</div>
+        <div class="filament-type item-value">
+          ${this.hass.states[this.entity_id].attributes.type}
+        </div>  
+        <div class="filament-name item-title">Filament</div>
+        <div class="filament-name item-value">
+          ${this.hass.states[this.entity_id].attributes.name}
+        </div>  
+        <div class="div4 item-title">Color</div>
+        <div class="div4 item-value">
+            <span
+               style="background-color: ${
+                 this.hass.states[this.entity_id].attributes.color
+               }; color: ${getContrastingTextColor(
+                 this.hass.states[this.entity_id].attributes.color
+               )}; padding: 5px 10px; border-radius: 5px;"
+               >${this.hass.states[this.entity_id].attributes.color}</span
+             >
+        </div>
+      `;
+    }
+  }
+
+  #populateActionButtons() {
+    // This is the node red integration so we need to show the close button
+    if (!this.is_bambu_lab) {
+      return html`
+        <div class="action-buttons">
+          <mwc-button
+            id="close"
+            class="action-button" 
+            @click=${this.#closePopup}
+          >
+            Close
+          </mwc-button>
+        </div>
+      `;
+    }
+
+    // The user had adjusted the filament settings so we need to show the confirm and reset buttons
+    if (this.#isSetEnabled()) {
+      return html`
+        <div class="action-buttons">
+          <mwc-button
+            id="confirm"
+            class="action-button" 
+            @click=${this.#handleSet}
+          >
+            Confirm
+          </mwc-button>
+          <mwc-button
+            id="reset"
+            class="action-button" 
+            @click=${this.#handleReset}
+          >
+            Reset
+          </mwc-button>
+        </div>
+      `;
+    }
+
+    // The user had not adjusted the filament settings so we need to show the load and unload buttons
+    return html`
+      <div class="action-buttons">
+        <mwc-button
+          id="load"
+          class="action-button" 
+          @click=${this.#handleLoad}
+          ?disabled=${!this.#isLoadButtonEnabled()}
+        >
+          ${this._loadState === "loading" 
+            ? html`<ha-circular-progress active size="small"></ha-circular-progress>Loading` 
+            : this._loadState === "success"
+            ? html`<ha-icon icon="mdi:check" style="color: var(--success-color)"></ha-icon>Load`
+            : this._loadState === "error"
+            ? html`<ha-icon icon="mdi:close" style="color: var(--error-color)"></ha-icon>Load`
+            : "Load"
+          }
+        </mwc-button>
+        <mwc-button
+          id="unload"
+          class="action-button" 
+          @click=${this.#handleUnload}
+          ?disabled=${!this.#isUnloadButtonEnabled()}
+        >
+          ${this._loadState === "unloading" 
+            ? html`<ha-circular-progress active size="small"></ha-circular-progress>Unloading` 
+            : this._loadState === "success"
+            ? html`<ha-icon icon="mdi:check" style="color: var(--success-color)"></ha-icon>Unload`
+            : this._loadState === "error"
+            ? html`<ha-icon icon="mdi:close" style="color: var(--error-color)"></ha-icon> Unload`
+            : "Unload"
+          }
+        </mwc-button>
+      </div>
+      `;
+  }
+} 
