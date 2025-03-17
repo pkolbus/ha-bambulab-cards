@@ -151,18 +151,18 @@ export class PrintControlCard extends LitElement {
     door_open:              { x: 86, y:60,   width:20, height:0 },
   };
 
-  private ClickTargets: string[] = [
+  private EXTRAENTITIES: string[] = [
     "target_bed_temp",
     "target_bed_temperature",
     "target_nozzle_temp",
     "target_nozzle_temperature",
   ]
 
-  private NodeRedEntities: { [key: string]: string } = {
+  private NODEREDENTITIES: { [key: string]: string } = {
     "bed_target_temperature": 'target_bed_temp',
     "bed_temperature": "bed_temp",
-    "big_fan1": "aux_fan",
-    "big_fan2": "chamber_fan",
+    "^fan.*big_fan1$": "aux_fan",
+    "^fan.*big_fan2$": "chamber_fan",
     "chamber_temperature": "chamber_temp",
     "door": "door_open",
     "nozzle_target_temperature": 'target_nozzle_temp',
@@ -260,13 +260,13 @@ export class PrintControlCard extends LitElement {
       }
       this._entityUX = this.EntityUX[this._model];
       let entityList = Object.keys(this._entityUX!);
-      entityList = entityList.concat(this.ClickTargets);
-      entityList = entityList.concat(Object.keys(this.NodeRedEntities));
+      entityList = entityList.concat(this.EXTRAENTITIES);
+      entityList = entityList.concat(Object.keys(this.NODEREDENTITIES));
       this._entityList = helpers.getBambuDeviceEntities(hass, this._device_id, entityList);
 
       // Override the entity list with the Node-RED entities if configured.
-      for (const e in this.NodeRedEntities) {
-        const target = this.NodeRedEntities[e];
+      for (const e in this.NODEREDENTITIES) {
+        const target = this.NODEREDENTITIES[e];
         if (this._entityList[e]) {
           this._entityList[target] = this._entityList[e];
         }
