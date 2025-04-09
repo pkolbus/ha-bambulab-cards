@@ -180,7 +180,6 @@ export class PrintStatusCard extends EntityProvider {
       if (this._model == "A1 MINI") {
         this._model = "A1MINI";
       }
-      this._model = "A1MINI";
       this._entityUX = this.EntityUX[this._model];
     }
   }
