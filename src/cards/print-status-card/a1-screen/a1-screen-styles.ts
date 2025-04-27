@@ -225,12 +225,21 @@ export default css`
     transition: fill 0.3s ease;
   }
 
+  .middle {
+    fill: #7f8c8d; /* Dark grey */
+    transition: fill 0.3s ease;
+  }
+
   .outer-slice:hover {
-    fill: #5a6b76; /* Medium grey */
+    fill: #5a6b76; /* Darker grey */
   }
 
   .inner-slice:hover {
-    fill: #95a5a6; /* Darker grey */
+    fill: #95a5a6; /* Medium grey */
+  }
+
+  .middle:hover {
+    fill: #5a6b76; /* Darker grey */
   }
 
   .outer-slice:active {
@@ -239,6 +248,10 @@ export default css`
 
   .inner-slice:active {
     fill: #7f8c8d; /* Darker grey when clicked */
+  }
+
+  .middle:active {
+    fill: #34495e; /* Darker grey when clicked */
   }
 
   .move-axis-container {
@@ -269,9 +282,24 @@ export default css`
   }
 
   .label ha-icon {
-    width: 20px;
-    height: 20px;
+    width: 25px;
+    height: 25px;
     pointer-events: none;
     color: black;
+  }
+
+  .menu-left {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 1000;
+  }
+
+  .menu-left button {
+    padding: 0px 0px;
+  }
+
+  .menu-left ha-icon {
+    --mdc-icon-size: 36px;
   }
 `;
