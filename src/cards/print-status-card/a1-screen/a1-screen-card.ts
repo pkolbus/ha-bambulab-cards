@@ -1,11 +1,13 @@
 import * as helpers from "../../../utils/helpers";
 import { customElement, property, state } from "lit/decorators.js";
 import { html, LitElement, nothing } from "lit";
+import { unsafeHTML } from 'lit-html/directives/unsafe-html.js';
 import styles from "./a1-screen-styles";
 import { hassContext, entitiesContext } from "../../../utils/context";
 import { consume } from "@lit/context";
 import "~/cards/shared-components/confirmation-prompt/confirmation-prompt";
 import "~/cards/shared-components/skip-objects";
+import "~/cards/ams-card/vector-ams-card/vector-ams-card";
 
 type ConfirmationState = {
   show: boolean;
@@ -18,6 +20,17 @@ enum MoveAxis {
   X,
   Y,
   HOME
+}
+
+enum Page {
+  Main,
+  Controls,
+  Ams,
+}
+
+interface AMS {
+  device_id: string;
+  spools: string[];
 }
 
 @customElement("a1-screen-card")
@@ -43,7 +56,10 @@ export class A1ScreenCard extends LitElement {
 
   @state() private showSkipObjects = false;
 
-  @state() private showFirstPage = true;
+  @state() private page = Page.Main;
+
+  @state() private _amsList: AMS[] = [];
+  @state() private _selectedAmsIndex: number = 0;
 
   static styles = styles;
 
@@ -128,6 +144,8 @@ export class A1ScreenCard extends LitElement {
     super.firstUpdated(changedProperties);
     this.observeCardHeight();
     this.processedImage = await this.#processCoverImage();
+
+    this.#getAMSList();
   }
 
   updated(changedProperties) {
@@ -302,16 +320,26 @@ export class A1ScreenCard extends LitElement {
             _device_id=${this._device_id}
           ></skip-objects>`
         : nothing}
-      <ha-card class="ha-bambulab-ssc">
+      <ha-card class="ha-bambulab-ssc"> 
         <div class="ha-bambulab-ssc-screen-container">
-          ${this.showFirstPage ? this.#renderFrontPage() : this.#renderSecondPage()}
+          ${this.page === Page.Main ? this.#renderFrontPage() :
+            this.page === Page.Controls ? this.#renderControlsPage() :
+            this.page === Page.Ams ? this.#renderAmsPage() : ''}
         </div>
       </ha-card>
     `;
   }
 
-  #togglePage() {
-    this.showFirstPage = !this.showFirstPage;
+  #showMainPage() {
+    this.page = Page.Main
+  }
+
+  #showControlsPage() {
+    this.page = Page.Controls
+  }
+
+  #showAmsPage() {
+    this.page = Page.Ams
   }
 
   #renderFrontPage() {
@@ -337,7 +365,7 @@ export class A1ScreenCard extends LitElement {
 
         <div class="ha-bambulab-ssc-control-buttons">
           <button class="ha-bambulab-ssc-control-button"
-            @click="${this.#togglePage}"
+            @click="${this.#showControlsPage}"
           >
             <ha-icon icon="mdi:camera-control"></ha-icon>
           </button>
@@ -410,26 +438,150 @@ export class A1ScreenCard extends LitElement {
           <ha-icon icon="mdi:fan"></ha-icon>
           <span class="sensor-value">${this.#state("aux_fan_speed")}%</span>
         </div>
+        <div class="ams" @click="${this.#showAmsPage}">
+          ${this.#renderAMSSvg(this._amsList[0]?.spools)}
+        </div>
       </div>
     `
   }
 
-  #renderSecondPage() {
+  #renderControlsPage() {
     return html`
-      <div class="menu-left">
-        <button @click=${this.#togglePage}>
-          <ha-icon icon="mdi:menu-left"></ha-icon>
-        </button>
-      </div>
-      
+      <button class="close-button" @click=${this.#showMainPage}>
+        <ha-icon icon="mdi:close"></ha-icon>
+      </button>
+
       <div class="ha-bambulab-ssc-status-content">
         <div class="circle-container">
           ${this.#renderMoveAxis()}
         </div>
       </div>
-
-      ${this.#renderSensorColumn()}
     `
+  }
+
+  #renderAmsPage() {
+    return html`
+    <div class="ams-page-container">
+      <button class="close-button" @click=${this.#showMainPage}>
+        <ha-icon icon="mdi:close"></ha-icon>
+      </button>
+
+      <div class="ams-selector">
+        ${this._amsList.map((ams, index) => html`
+          <div class="ams-selector-item ${index === this._selectedAmsIndex ? 'selected' : ''}"
+               @click=${() => this._selectedAmsIndex = index}>
+            ${this.#renderAMSSvg(ams.spools)}
+          </div>
+        `)}
+      </div>
+
+      <div class="spool-container">
+        ${this._amsList[this._selectedAmsIndex]?.spools.map(
+          spool => html`
+            <ha-bambulab-spool
+              .key="${spool}"
+              .entity_id="${spool}"
+              .tag_uid=${0}
+              .show_type=${true}
+              .spool_anim_reflection=${false}
+              .spool_anim_wiggle=${false}
+            ></ha-bambulab-spool>
+          `
+        )}
+      </div>
+    </div>
+    `
+  }
+
+  #renderAMSSvg(spools: string[]) {
+    if (!spools) {
+      console.log('No spools provided');
+      return html``;
+    }
+
+    const spoolWidth = 10;
+    const gap = 4;
+    const totalWidth = (spoolWidth * spools.length) + (gap * (spools.length - 1)) + 2; // +2 for the 1px padding on each side
+
+    const svgString = `
+      <svg viewBox="0 0 ${totalWidth} 18" width="${totalWidth}" height="18">
+        ${spools.map((spool, i) => {
+          const color = this._hass.states[spool].attributes.color;
+          const isEmpty = this._hass.states[spool].attributes.empty;
+          const x = 1 + (i * (spoolWidth + gap));
+          return `
+            <rect
+              x="${x}" y="1"
+              width="${spoolWidth}" height="16"
+              fill="${color}"
+              stroke="#808080"
+              stroke-width="1"/>
+            ${isEmpty ? `
+              <line
+                x1="${x + 1}" y1="2"
+                x2="${x + spoolWidth - 1}" y2="17"
+                stroke="#808080"
+                stroke-width="1"/>
+              <line
+                x1="${x + 1}" y1="17"
+                x2="${x + spoolWidth - 1}" y2="2"
+                stroke="#808080"
+                stroke-width="1"/>
+            ` : ''}`;
+        }).join('')}
+      </svg>
+    `;
+
+    return html`${unsafeHTML(svgString)}`;
+  }
+
+  #getAMSList() {
+    const ENTITYLIST: string[] = [
+      "ams_temp",
+      "temp",             // Node-RED only
+      "custom_humidity",
+      "humidity_index",
+      "humidity_level",   // Node-RED only
+      "tray_0",           // Node-RED only
+      "tray_1",
+      "tray_2",
+      "tray_3",
+      "tray_4",
+      "external_spool",
+    ];
+
+    const amsList: string[] = helpers.getAttachedDeviceIds(this._hass, this._device_id);
+    const externalSpools: AMS[] = [];
+
+    amsList.forEach(ams_device_id => {
+      var device = this._hass.devices[ams_device_id];
+      var entities = helpers.getBambuDeviceEntities(this._hass, ams_device_id, ENTITYLIST);
+      var spools: string[] = [];
+
+      if (device.model === "External Spool") {
+        if (entities["external_spool"]?.entity_id) {
+          spools.push(entities["external_spool"].entity_id);
+          externalSpools.push({
+            device_id: ams_device_id,
+            spools: spools,
+          });
+        }
+      } else {
+        if (entities["tray_1"]?.entity_id) spools.push(entities["tray_1"].entity_id);
+        if (entities["tray_2"]?.entity_id) spools.push(entities["tray_2"].entity_id);
+        if (entities["tray_3"]?.entity_id) spools.push(entities["tray_3"].entity_id);
+        if (entities["tray_4"]?.entity_id) spools.push(entities["tray_4"].entity_id);
+
+        this._amsList.push({
+          device_id: ams_device_id,
+          spools: spools,
+        });
+      }
+    });
+
+    // Add external spools at the end
+    this._amsList.push(...externalSpools);
+    return amsList;
   }
 
   #moveAxis(axis: MoveAxis, distance: Number) {
@@ -597,3 +749,4 @@ export class A1ScreenCard extends LitElement {
   }
 
 }
+

@@ -302,4 +302,88 @@ export default css`
   .menu-left ha-icon {
     --mdc-icon-size: 36px;
   }
+
+  .ams {
+    cursor: pointer;
+    padding-top: 4px;
+  }
+
+  .ams-page-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    height: 100%;
+    width: 100%;
+    padding-top: 0px;
+  }
+
+  .close-button {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    background: none;
+    border: none;
+    color: var(--secondary-text-color);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+  }
+
+  .close-button:hover {
+    color: var(--primary-text-color);
+  }
+
+  .ams-selector {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 8px;
+    padding: 0px;
+    width: 100%;
+  }
+
+  .ams-selector-item {
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ams-selector-item:hover {
+    background-color: var(--ha-card-background, var(--card-background-color));
+  }
+
+  .ams-selector-item.selected {
+    background-color: var(--primary-color);
+  }
+
+  .spool-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    margin-top: 4px;
+    width: 100%;
+    flex: 1;
+  }
+
+  .spool-container ha-bambulab-spool {
+    width: 25%;
+    min-width: 25%;
+    max-width: 25%;
+    padding-right: 8px;
+    height: 100%;
+  }
+
+  .spool-container ha-bambulab-spool:last-child {
+    padding-right: 0;
+  }
+
 `;
