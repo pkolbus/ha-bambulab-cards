@@ -247,6 +247,10 @@ export default css`
     color: var(--text-primary);
   }
 
+  .sensor-value ha-icon[icon="mdi:alert-outline"] {
+    color: #ffeb3b;
+  }
+
   .sensor ha-icon {
     --mdc-icon-size: 1.2em;
     color: var(--text-secondary);
@@ -625,7 +629,7 @@ export default css`
     position: absolute;
     bottom: 0px;
     right: 0px;
-    z-index: 10;
+    z-index: 1;
     background: none;
     border: none;
     box-shadow: none;
