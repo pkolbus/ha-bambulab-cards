@@ -28,8 +28,9 @@ export default css`
 
   .ha-bambulab-ssc-status-and-controls {
     display: flex;
-    flex: 1;
     flex-direction: row;
+    height: 100%;
+    width: 100%;
     gap: 12px;
   }
 
@@ -40,9 +41,22 @@ export default css`
 
   .ha-bambulab-ssc-status-content {
     display: flex;
-    flex: 1;
     flex-direction: column;
-    min-height: 24px;
+    flex: 1 1 0%;
+    min-width: 0;
+    min-height: 0;
+    gap: 0;
+  }
+
+  .condensed-mode .ha-bambulab-ssc-status-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    width: auto;
+    min-width: 0;
+    min-height: 0;
+    flex: 1 1 0%;
   }
 
   .ha-bambulab-controls-content {
@@ -61,6 +75,7 @@ export default css`
     justify-content: center;
     min-height: 0;
     overflow: hidden;
+    position: relative;
   }
 
   .condensed-mode .ha-bambulab-ssc-status-icon {
@@ -110,7 +125,17 @@ export default css`
   .ha-bambulab-ssc-control-buttons {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: 8px;
+    max-width: 70px;
+    width: 100%;
+    flex: 1 1 0%;
+    height: 100%;
+  }
+
+  .ha-bambulab-ssc-extra-controls {
+    display: flex;
+    flex-direction: column;
     gap: 8px;
     max-width: 70px;
     width: 100%;
@@ -118,10 +143,19 @@ export default css`
 
   .condensed-mode .ha-bambulab-ssc-control-buttons {
     flex-direction: row;
+    width: 100%;
     max-width: none;
     height: auto;
-    align-self: flex-end;
-    justify-content: flex-end;
+    min-height: 0;
+    flex: none;
+    margin-top: 8px;
+    gap: 8px;
+  }
+
+  .condensed-mode .ha-bambulab-ssc-control-buttons .ha-bambulab-ssc-control-button {
+    min-height: 48px;
+    height: 48px;
+    flex: 1 1 0;
   }
 
   .ha-bambulab-ssc-control-button {
@@ -136,7 +170,8 @@ export default css`
     align-items: center;
     justify-content: center;
     transition: background-color 0.2s ease;
-    flex-grow: 1;
+    flex: 0 1 19%;
+    max-height: 19%;
   }
 
   .ha-bambulab-ssc-control-button.on {
@@ -166,23 +201,31 @@ export default css`
     background: var(--warning-color);
   }
 
+  .ha-bambulab-ssc-control-button ha-icon {
+    --mdc-icon-size: 24px;
+  }
+
   .ha-bambulab-ssc-sensors {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
+    align-items: stretch;
     max-width: 70px;
-    width: 100%;
+    width: 70px;
     background: var(--control-background);
     border-radius: 4px;
     color: var(--text-primary);
     padding: 8px;
     box-sizing: border-box;
     cursor: pointer;
+    flex: none;
+    height: 100%;
   }
 
   .sensor {
     position: relative;
-    flex: 1;
+    flex: 0 1 24%;
+    max-height: 24%;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -313,8 +356,12 @@ export default css`
   }
 
   .ams {
-    cursor: pointer;
-    padding-top: 9px;
+    flex: 0 1 16%;
+    max-height: 16%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: auto;
   }
 
   .ams-page-container {
@@ -421,8 +468,22 @@ export default css`
     justify-content: center;
   }
 
+  .extra-controls-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    color: var(--text-primary);
+  }
+
+  .extra-controls-content h2 {
+    margin: 0;
+    font-size: 1.2em;
+    color: var(--text-primary);
+  }
+
   .power-button {
-    position: absolute;
     top: 4px;
     left: 4px;
     background: var(--control-background);
@@ -438,12 +499,21 @@ export default css`
     z-index: 1;
   }
 
+  .ha-bambulab-ssc-control-button.power-button.on,
   .power-button.on {
-    color: var(--accent-color);
+    background: #2ecc40 !important;
   }
 
   .power-button.off {
-    color: var(--warning-color);
+    background: var(--control-background) !important;
+  }
+
+  .power-button.off .power-icon {
+    color: #f44336 !important;
+  }
+
+  .power-button.on .power-icon {
+    color: var(--text-primary) !important;
   }
 
   .power-button:hover {
@@ -503,6 +573,111 @@ export default css`
     cursor: not-allowed;
     opacity: 0.5;
     pointer-events: none;
+  }
+
+  .video-toggle-button {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: var(--control-background);
+    border: none;
+    border-radius: 50%;
+    color: var(--text-primary);
+    cursor: pointer;
+    padding: 6px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+
+  .video-toggle-button:hover {
+    background: rgba(255,255,255,0.2);
+  }
+
+  .video-toggle-button ha-icon {
+    --mdc-icon-size: 22px;
+  }
+
+  .invisible-placeholder {
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .ams-divider {
+    border-top: 1px solid var(--divider-color);
+    width: 100%;
+    margin: 0 0 0 0;
+    height: 0;
+  }
+
+  .condensed-mode .ha-bambulab-ssc-sensors {
+    width: 70px;
+    max-width: 70px;
+    min-width: 0;
+    height: 100%;
+    flex: none;
+    margin-top: 0;
+  }
+
+  .video-maximize-btn {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    z-index: 10;
+    background: none;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .video-maximize-btn ha-icon {
+    --mdc-icon-size: 28px;
+    color: var(--text-primary);
+    background: none;
+    filter:
+      drop-shadow(0 0 0.5px #000)
+      drop-shadow(0 0 0.5px #000)
+      drop-shadow(0 0 0.5px #000)
+      drop-shadow(0 0 0.5px #000);
+  }
+
+  .video-maximized .video-maximized-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    background: black;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .video-maximized-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: black;
+    margin: 0;
+    padding: 0;
+    display: block;
+  }
+  .video-maximized .ha-bambulab-ssc-status-content,
+  .video-maximized .ha-bambulab-ssc-control-buttons,
+  .video-maximized .ha-bambulab-ssc-sensors {
+    display: none !important;
+  }
+
+  .mirrored {
+    transform: scaleX(-1);
   }
 
 `;

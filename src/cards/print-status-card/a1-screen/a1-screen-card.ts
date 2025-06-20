@@ -44,7 +44,10 @@ export class A1ScreenCard extends LitElement {
   @property() public coverImage;
   @property() public _device_id;
   @state() private processedImage: string | null = null;
-
+  @state() private showExtraControls = false;
+  @state() private showVideoFeed = false;
+  @state() private videoMaximized = false;
+  
   @consume({ context: hassContext, subscribe: true })
   @state()
   public _hass;
@@ -317,6 +320,18 @@ export class A1ScreenCard extends LitElement {
     this.showSkipObjects = false;
   }
 
+  #toggleExtraControls() {
+    this.showExtraControls = !this.showExtraControls;
+  }
+
+  #toggleVideoFeed() {
+    this.showVideoFeed = !this.showVideoFeed;
+  }
+
+  #toggleVideoMaximized() {
+    this.videoMaximized = !this.videoMaximized;
+  }
+
   render() {
     return html`
       ${this.confirmation.show
@@ -364,75 +379,136 @@ export class A1ScreenCard extends LitElement {
 
   #renderFrontPage() {
     return html`
-      <div class="ha-bambulab-ssc-status-and-controls">
-        <div class="ha-bambulab-ssc-status-content">
-          <div class="ha-bambulab-ssc-status-icon">
-            <img src="${this.processedImage || this.coverImage}" alt="Cover Image" />
-          </div>
-          <div class="ha-bambulab-ssc-status-info">
-            <div class="ha-bambulab-ssc-status-time">${this.#getRemainingTime()}</div>
-            <div class="ha-bambulab-ssc-progress-container">
-              <div class="ha-bambulab-ssc-progress-bar">
-                <div
-                  class="ha-bambulab-ssc-progress"
-                  style="width: ${this.#calculateProgress()}"
-                ></div>
+      <div class="ha-bambulab-ssc-status-and-controls${this.videoMaximized ? ' video-maximized' : ''}">
+        ${this.videoMaximized
+          ? html`
+              <div class="video-maximized-container">
+                <img src="${helpers.getCameraStreamUrl(this._hass, this._deviceEntities['camera'])}" class="video-maximized-img" />
+                <button class="video-maximize-btn" @click="${this.#toggleVideoMaximized}" title="Restore video">
+                  <ha-icon icon="mdi:arrow-collapse" class="mirrored"></ha-icon>
+                </button>
               </div>
-              <div class="ha-bambulab-ssc-progress-text">${this.#getPrintStatusText()}</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="ha-bambulab-ssc-control-buttons">
-          <button class="ha-bambulab-ssc-control-button"
-            ?disabled="${this.#isControlsPageDisabled()}"
-            @click="${this.#showControlsPage}"
-          >
-            <ha-icon icon="mdi:camera-control"></ha-icon>
-          </button>
-          <button
-            class="ha-bambulab-ssc-control-button ${this.#state("chamber_light")}"
-            @click="${() =>
-              helpers.toggleLight(this._hass, this._deviceEntities["chamber_light"])}"
-          >
-            <ha-icon icon="mdi:lightbulb"></ha-icon>
-          </button>
-          <button
-            class="ha-bambulab-ssc-control-button"
-            ?disabled="${this.#isSkipObjectsButtonDisabled()}"
-            @click="${() => this.#showSkipObjects()}"
-          >
-            <ha-icon icon="mdi:debug-step-over"></ha-icon>
-          </button>
-          <button
-            class="ha-bambulab-ssc-control-button"
-            ?disabled="${this.#isPauseResumeDisabled()}"
-            @click="${() =>
-              this.#showConfirmation(
-                helpers.isEntityUnavailable(this._hass, this._deviceEntities["pause"])
-                  ? "resume"
-                  : "pause"
-              )}"
-          >
-            <ha-icon icon="${this.#getPauseResumeIcon()}"></ha-icon>
-          </button>
-          <button
-            class="ha-bambulab-ssc-control-button ${this.#isStopButtonDisabled()
-              ? ""
-              : "warning"}"
-            ?disabled="${this.#isStopButtonDisabled()}"
-            @click="${() => this.#showConfirmation("stop")}"
-          >
-            <ha-icon icon="mdi:stop"></ha-icon>
-          </button>
-        </div>
+            `
+          : html`
+              <div class="ha-bambulab-ssc-status-content">
+                <div class="ha-bambulab-ssc-status-icon" style="position: relative;">
+                  ${this.showVideoFeed
+                    ? html`
+                        <img src="${helpers.getCameraStreamUrl(this._hass, this._deviceEntities['camera'])}" />
+                        <button class="video-maximize-btn" @click="${this.#toggleVideoMaximized}" title="Maximize video">
+                          <ha-icon icon="mdi:arrow-expand" class="mirrored"></ha-icon>
+                        </button>
+                      `
+                    : html`<img src="${this.processedImage || this.coverImage}" alt="Cover Image" />`}
+                </div>
+                <div class="ha-bambulab-ssc-status-info">
+                  <div class="ha-bambulab-ssc-status-time">${this.#getRemainingTime()}</div>
+                  <div class="ha-bambulab-ssc-progress-container">
+                    <div class="ha-bambulab-ssc-progress-bar">
+                      <div
+                        class="ha-bambulab-ssc-progress"
+                        style="width: ${this.#calculateProgress()}"
+                      ></div>
+                    </div>
+                    <div class="ha-bambulab-ssc-progress-text">${this.#getPrintStatusText()}</div>
+                  </div>
+                </div>
+              </div>
+              ${this.showExtraControls ? this.#renderExtraControlsColumn() : this.#renderControlsColumn()}
+              ${this.showExtraControls ? this.#renderAlternateSensorColumn() : this.#renderMainSensorColumn()}
+            `}
       </div>
-
-      ${this.#renderSensorColumn()}
-  `
+    `;
   }
 
-  #renderSensorColumn() {
+  #renderControlsColumn() {
+    return html`
+      <div class="ha-bambulab-ssc-control-buttons">
+        ${!this.showExtraControls ? html`
+          <button class="ha-bambulab-ssc-control-button"
+            @click="${this.#toggleExtraControls}"
+          >
+            <ha-icon icon="mdi:swap-horizontal"></ha-icon>
+          </button>
+        ` : nothing}
+        <button class="ha-bambulab-ssc-control-button"
+          ?disabled="${this.#isControlsPageDisabled()}"
+          @click="${this.#showControlsPage}"
+        >
+          <ha-icon icon="mdi:camera-control"></ha-icon>
+        </button>
+        <button
+          class="ha-bambulab-ssc-control-button ${this.#state("chamber_light")}" 
+          @click="${() => helpers.toggleLight(this._hass, this._deviceEntities["chamber_light"])}"
+        >
+          <ha-icon icon="mdi:lightbulb"></ha-icon>
+        </button>
+        <button
+          class="ha-bambulab-ssc-control-button"
+          ?disabled="${this.#isPauseResumeDisabled()}"
+          @click="${() =>
+            this.#showConfirmation(
+              helpers.isEntityUnavailable(this._hass, this._deviceEntities["pause"])
+                ? "resume"
+                : "pause"
+            )}"
+        >
+          <ha-icon icon="${this.#getPauseResumeIcon()}"></ha-icon>
+        </button>
+        <button
+          class="ha-bambulab-ssc-control-button ${this.#isStopButtonDisabled()
+            ? ""
+            : "warning"}"
+          ?disabled="${this.#isStopButtonDisabled()}"
+          @click="${() => this.#showConfirmation("stop")}"
+        >
+          <ha-icon icon="mdi:stop"></ha-icon>
+        </button>
+      </div>
+    `
+  }
+
+  #renderExtraControlsColumn() {
+    // Count visible buttons (excluding power, which is always last if present)
+    let count = 1; // swap button always present
+    count++; // skip objects button always present
+    // Only show video toggle if not X1C or H2D
+    const device = this._hass.devices?.[this._device_id];
+    const hideVideoToggle = device && (device.model === 'X1C' || device.model === 'H2D');
+    if (!hideVideoToggle) count++; // video toggle button present if not hidden
+    const hasPower = !!this._deviceEntities["power"]?.entity_id;
+    const placeholders = Array.from({ length: 5 - (count + (hasPower ? 1 : 0)) });
+    return html`
+      <div class="ha-bambulab-ssc-control-buttons">
+        <button class="ha-bambulab-ssc-control-button" @click="${this.#toggleExtraControls}">
+          <ha-icon icon="mdi:swap-horizontal"></ha-icon>
+        </button>
+        <button
+          class="ha-bambulab-ssc-control-button"
+          ?disabled="${this.#isSkipObjectsButtonDisabled()}"
+          @click="${() => this.#showSkipObjects()}"
+        >
+          <ha-icon icon="mdi:debug-step-over"></ha-icon>
+        </button>
+        ${!hideVideoToggle ? html`
+          <button class="ha-bambulab-ssc-control-button" @click="${this.#toggleVideoFeed}" title="Toggle video feed">
+            <ha-icon icon="${this.showVideoFeed ? 'mdi:camera' : 'mdi:video'}"></ha-icon>
+          </button>
+        ` : nothing}
+        ${placeholders.map(() => html`
+          <button class="ha-bambulab-ssc-control-button invisible-placeholder" aria-hidden="true" tabindex="-1"></button>
+        `)}
+        ${hasPower ? html`
+          <button class="ha-bambulab-ssc-control-button power-button ${this.#state('power') === 'on' ? 'on' : 'off'}" @click=${() => this.#clickEntity("power")}
+            title="Power">
+            <ha-icon icon="mdi:power" class="power-icon"></ha-icon>
+          </button>
+        ` : nothing}
+      </div>
+    `;
+  }
+
+  #renderMainSensorColumn() {
     return html`
       <div class="ha-bambulab-ssc-sensors">
         <div class="sensor" @click="${() => this.#clickEntity("target_nozzle_temperature")}">
@@ -457,15 +533,77 @@ export class A1ScreenCard extends LitElement {
         </div>
         ${this._deviceEntities["aux_fan_speed"] ? html`
           <div class="sensor" @click="${() => this.#clickEntity("aux_fan")}">
-            <ha-icon icon="mdi:fan"></ha-icon>
+            <div class="twoicons">
+              <ha-icon icon="mdi:fan"></ha-icon>
+              <ha-icon icon="mdi:chevron-right"></ha-icon>
+            </div>
             <span class="sensor-value">${this.#state("aux_fan_speed")}%</span>
           </div>
         ` : nothing}
+        <div class="ams-divider"></div>
         <div class="ams" @click="${this.#showAmsPage}">
           ${this.#renderAMSSvg(this._amsList[0]?.spools)}
         </div>
       </div>
-    `
+    `;
+  }
+
+  #renderAlternateSensorColumn() {
+    // Count visible sensors (excluding AMS)
+    let count = 0;
+    if (this._deviceEntities["chamber_temp"]) count++;
+    if (this._deviceEntities["humidity"]) count++;
+    if (this._deviceEntities["chamber_fan"]) count++;
+    count++; // cooling fan always present
+    // Main sensor column: nozzle, bed, speed, aux fan (optional)
+    let mainCount = 3; // nozzle, bed, speed always present
+    if (this._deviceEntities["aux_fan_speed"]) mainCount++;
+    const placeholders = Array.from({ length: mainCount - count });
+    return html`
+      <div class="ha-bambulab-ssc-sensors">
+        ${this._deviceEntities["chamber_temp"] ? html`
+          <div class="sensor">
+            <div class="twoicons">
+              <ha-icon icon="mdi:mirror-rectangle"></ha-icon>
+              <ha-icon icon="mdi:thermometer"></ha-icon>
+            </div>
+            <span class="sensor-value">${this.#formattedState("chamber_temp")}</span>
+          </div>
+        ` : nothing}
+        ${this._deviceEntities["humidity"] ? html`
+          <div class="sensor">
+            <div class="twoicons">
+              <ha-icon icon="mdi:mirror-rectangle"></ha-icon>
+              <ha-icon icon="mdi:water-percent"></ha-icon>
+            </div>
+            <span class="sensor-value">${this.#formattedState("humidity")}</span>
+          </div>
+        ` : nothing}
+        ${this._deviceEntities["chamber_fan"] ? html`
+          <div class="sensor" @click="${() => this.#clickEntity("chamber_fan")}">
+            <div class="twoicons">
+              <ha-icon icon="mdi:mirror-rectangle"></ha-icon>
+              <ha-icon icon="mdi:fan"></ha-icon>
+            </div>
+            <span class="sensor-value">${this.#state("chamber_fan_speed") ?? '--'}%</span>
+          </div>
+        ` : nothing}
+        <div class="sensor" @click="${() => this.#clickEntity("cooling_fan")}">
+          <div class="twoicons">
+            <ha-icon icon="mdi:printer-3d"></ha-icon>
+            <ha-icon icon="mdi:fan"></ha-icon>
+          </div>
+          <span class="sensor-value">${this.#state("cooling_fan_speed") ?? '--'}%</span>
+        </div>
+        ${placeholders.map(() => html`
+          <div class="sensor invisible-placeholder" aria-hidden="true"></div>
+        `)}
+        <div class="ams-divider"></div>
+        <div class="ams" @click="${this.#showAmsPage}">
+          ${this.#renderAMSSvg(this._amsList[0]?.spools)}
+        </div>
+      </div>
+    `;
   }
 
   #renderControlsPage() {
@@ -474,12 +612,6 @@ export class A1ScreenCard extends LitElement {
         <ha-icon icon="mdi:close"></ha-icon>
       </button>
       <div class="controls-page-container">
-        ${this._deviceEntities["power"]?.entity_id ? html`
-          <button class="power-button ${this.#state("power") === "on" ? "on" : "off"}" @click=${() => this.#clickEntity("power")}>
-            <ha-icon icon="mdi:power"></ha-icon>
-          </button>
-        ` : nothing}
-
         <div class="ha-bambulab-controls-content">
           ${this.#renderMoveAxis()}
           ${this.#renderBedMoveControls()}
