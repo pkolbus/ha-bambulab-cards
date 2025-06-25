@@ -12,9 +12,12 @@ export default css`
   }
 
   .ha-bambulab-ssc {
+    position: relative;
     height: 100%;
     width: 100%;
     background: var(--dark-background);
+    max-height: 100%;
+    overflow: hidden;
   }
 
   .ha-bambulab-ssc-screen-container {
@@ -24,6 +27,8 @@ export default css`
     padding: 20px;
     box-sizing: border-box;
     gap: 12px;
+    max-height: 100%;
+    overflow: hidden;
   }
 
   .ha-bambulab-ssc-status-and-controls {
@@ -32,6 +37,8 @@ export default css`
     height: 100%;
     width: 100%;
     gap: 12px;
+    max-height: 100%;
+    overflow: hidden;
   }
 
   .condensed-mode .ha-bambulab-ssc-status-and-controls {
@@ -85,8 +92,26 @@ export default css`
   .ha-bambulab-ssc-status-icon img {
     width: 100%;
     height: 100%;
+    max-width: 100%;
     max-height: 100%;
     object-fit: contain;
+    flex-shrink: 1;
+  }
+
+  .ha-bambulab-ssc-status-icon video {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    flex-shrink: 1;
+  }
+
+  .ha-bambulab-ssc-status-icon iframe {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    max-width: 100%;
+    border: none;
     flex-shrink: 1;
   }
 
@@ -640,6 +665,7 @@ export default css`
     align-items: center;
     justify-content: center;
   }
+
   .video-maximize-btn ha-icon {
     --mdc-icon-size: 28px;
     color: var(--text-primary);
@@ -651,21 +677,37 @@ export default css`
       drop-shadow(0 0 0.5px #000);
   }
 
+  .video-maximized .ha-bambulab-ssc-status-content,
+  .video-maximized .ha-bambulab-ssc-control-buttons,
+  .video-maximized .ha-bambulab-ssc-sensors {
+    display: none !important;
+  }
+
   .video-maximized .video-maximized-container {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    max-width: 100%;
-    max-height: 100%;
-    background: black;
-    z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: center;
+    background: black;
+    z-index: 1000;
+    overflow: hidden;
   }
-  .video-maximized-img {
+
+  .video-maximized .video-maximized-container video {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain;
+    display: block;
+    background: black;
+  }
+
+  .video-maximized .video-maximized-container img {
     width: 100%;
     height: 100%;
     object-fit: contain;
@@ -674,10 +716,15 @@ export default css`
     padding: 0;
     display: block;
   }
-  .video-maximized .ha-bambulab-ssc-status-content,
-  .video-maximized .ha-bambulab-ssc-control-buttons,
-  .video-maximized .ha-bambulab-ssc-sensors {
-    display: none !important;
+
+  .video-maximized .video-maximized-container iframe {
+    max-width: 100%;
+    max-height: 100%;
+    width: 100%;
+    height: 100%;
+    display: block;
+    background: black;
+    border: none;
   }
 
   .mirrored {
