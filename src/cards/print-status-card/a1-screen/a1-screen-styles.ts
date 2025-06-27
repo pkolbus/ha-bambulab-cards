@@ -730,5 +730,4 @@ export default css`
   .mirrored {
     transform: scaleX(-1);
   }
-
 `;
