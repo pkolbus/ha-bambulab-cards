@@ -1,5 +1,5 @@
 import * as helpers from "../../../utils/helpers";
-import { customElement, property, state } from "lit/decorators.js";
+import { customElement, property, state, query } from "lit/decorators.js";
 import { html, LitElement, nothing } from "lit";
 import { unsafeHTML } from 'lit-html/directives/unsafe-html.js';
 import styles from "./a1-screen-styles";
@@ -8,6 +8,7 @@ import { consume } from "@lit/context";
 import "~/cards/shared-components/confirmation-prompt/confirmation-prompt";
 import "~/cards/shared-components/skip-objects";
 import "~/cards/ams-card/vector-ams-card/vector-ams-card";
+import "~/cards/shared-components/print-history-popup";
 
 type ConfirmationState = {
   show: boolean;
@@ -56,6 +57,9 @@ export class A1ScreenCard extends LitElement {
   @consume({ context: entitiesContext, subscribe: true })
   @state()
   public _deviceEntities;
+
+  @query('print-history-popup')
+  private fileCachePopup!: HTMLElement;
 
   @state() private confirmation: ConfirmationState = {
     show: false,
@@ -346,6 +350,16 @@ export class A1ScreenCard extends LitElement {
     window.location.href = url;
   }
 
+  #showFileCache() {
+    if (this.fileCachePopup) {
+      (this.fileCachePopup as any).show();
+    }
+  }
+
+  #getDeviceSerial() {
+    return this._hass.devices[this._device_id].identifiers[0][1];
+  }
+
   render() {
     return html`
       ${this.confirmation.show
@@ -376,6 +390,12 @@ export class A1ScreenCard extends LitElement {
             this.page === Page.Ams ? this.#renderAmsPage() : ''}
         </div>
       </ha-card>
+      <print-history-popup
+        .device_id=${this._device_id}
+        .device_serial=${this.#getDeviceSerial()}
+        .file_type=${"3mf"}
+        .max_files=${20}
+      ></print-history-popup>
     `;
   }
 
@@ -425,6 +445,9 @@ export class A1ScreenCard extends LitElement {
           : html`
               <div class="ha-bambulab-ssc-status-content">
                 <div class="ha-bambulab-ssc-status-icon" style="position: relative;">
+                  <button class="video-toggle-button" @click="${this.#toggleVideoFeed}" title="${this.showVideoFeed ? 'Return to cover image' : 'Show video feed'}">
+                    <ha-icon icon="${this.showVideoFeed ? 'mdi:camera' : 'mdi:video'}"></ha-icon>
+                  </button>
                   ${this.showVideoFeed
                     ? html `
                         ${videoHtml}
@@ -457,7 +480,6 @@ export class A1ScreenCard extends LitElement {
   }
 
   #renderMainControlsColumn() {
-
     return html`
       <div class="ha-bambulab-ssc-control-buttons">
         <button class="ha-bambulab-ssc-control-button" @click="${this.#toggleExtraControls}">
@@ -467,8 +489,8 @@ export class A1ScreenCard extends LitElement {
           @click="${() => helpers.toggleLight(this._hass, this._deviceEntities["chamber_light"])}">
           <ha-icon icon="mdi:lightbulb"></ha-icon>
         </button>
-        <button class="ha-bambulab-ssc-control-button" @click="${this.#toggleVideoFeed}" title="Toggle video feed">
-          <ha-icon icon="${this.showVideoFeed ? 'mdi:camera' : 'mdi:video'}"></ha-icon>
+        <button class="ha-bambulab-ssc-control-button" @click="${this.#showFileCache}" title="Show print history/timelapse">
+          <ha-icon icon="mdi:list-box-outline"></ha-icon>
         </button>
         <button
           class="ha-bambulab-ssc-control-button"
@@ -509,7 +531,7 @@ export class A1ScreenCard extends LitElement {
           @click="${() => this.#showSkipObjects()}">
           <ha-icon icon="mdi:debug-step-over"></ha-icon>
         </button>
-        <button class="ha-bambulab-ssc-control-button" @click="${this.#openDevicePage}" title="Open device page">
+        <button class="ha-bambulab-ssc-control-button" @click="${this.#openDevicePage}" title="Show Home Assistant device page">
           <ha-icon icon="mdi:dots-horizontal"></ha-icon>
         </button>
         ${hasPower ? html`
