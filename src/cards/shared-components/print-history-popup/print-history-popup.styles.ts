@@ -16,18 +16,18 @@ export default css`
   }
 
   .print-history-popup {
-    background: var(--ha-card-background, var(--card-background-color, white));
-    border-radius: var(--ha-card-border-radius, 8px);
     box-shadow: var(--ha-card-box-shadow, 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2));
-    font-family: var(--ha-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif);
-    max-width: 90vw;
-    max-height: 90vh;
-    width: 800px;
-    display: flex;
-    flex-direction: column;
     border: 1px solid var(--divider-color, #e0e0e0);
-    height: 100%;
+    border-radius: var(--ha-card-border-radius, 8px);
+    background: var(--ha-card-background, var(--card-background-color, white));
+    font-family: var(--ha-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif);
+    max-width: 90%;
+    max-height: 70vh;
+    min-height: 260px;
+    width: 800px;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: manipulation;
   }
 
   .print-history-header,
@@ -174,10 +174,14 @@ export default css`
   .print-history-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-auto-rows: minmax(260px, auto);
     gap: 16px;
     padding: 16px;
     background: var(--ha-card-background, var(--card-background-color, white));
+    flex: 1
+    min-height: 0;
   }
+
   .print-history-card {
     border: 1px solid var(--divider-color, #e0e0e0);
     border-radius: var(--ha-card-border-radius, 8px);
@@ -307,13 +311,14 @@ export default css`
     justify-content: center;
     z-index: 2000;
   }
+
   .print-settings-popup {
     background: var(--ha-card-background, var(--card-background-color, white));
     border-radius: var(--ha-card-border-radius, 8px);
     box-shadow: var(--ha-card-box-shadow, 0 4px 8px rgba(0, 0, 0, 0.2));
     max-width: 90vw;
     width: 400px;
-    max-height: 90vh;
+    max-height: 70vh;
     display: flex;
     flex-direction: column;
     border: 1px solid var(--divider-color, #e0e0e0);
@@ -619,25 +624,6 @@ export default css`
 
     .print-settings-overlay {
       background: rgba(0, 0, 0, 0.8);
-    }
-  }
-
-  /* Responsive adjustments for small screens */
-  @media (max-width: 600px), (max-height: 600px) {
-    .print-history-popup {
-      max-height: 100vh !important;
-      height: 100vh !important;
-      overflow-y: auto !important;
-    }
-  }
-
-  @media (max-height: 600px) {
-    .print-history-grid {
-      grid-auto-rows: minmax(260px, auto);
-      max-height: calc(100vh - 120px);
-    }
-    .print-settings-popup {
-      min-height: 260px;
     }
   }
 `; 
