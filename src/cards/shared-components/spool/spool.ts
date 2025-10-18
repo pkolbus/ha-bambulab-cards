@@ -17,6 +17,7 @@ export class Spool extends LitElement {
   @property({ type: Number })  private remainHeight = 95;
   @property({ type: Boolean }) public developer_lan_mode: boolean = true;
   @property() private resizeObserver: ResizeObserver | null = null;
+  @property({ type: Boolean }) private emptySpool: boolean = false;
 
   static styles = styles;
 
@@ -47,7 +48,16 @@ export class Spool extends LitElement {
   }
 
   firstUpdated() {
+    // initial layers/heights after first render
+    this.calculateHeights();
     this.updateLayers();
+  }
+
+  updated(changedProps: Map<string, any>) {
+    if (changedProps.has("entity_id")) {
+      this.calculateHeights();
+      this.updateLayers();
+    }
   }
 
   render() {
@@ -70,10 +80,11 @@ export class Spool extends LitElement {
                   : ""}"
               >
                 <div
-                  class="v-string-roll"
+                  class="${this.emptySpool ? "v-solid-roll":"v-string-roll"}"
                   id="v-string-roll"
-                  style="background: ${this.hass.states[this.entity_id]?.attributes
-                    .color}; height: ${this.remainHeight.toFixed(2)}%"
+                  style=${this.emptySpool ? 
+                    `height: ${this.remainHeight.toFixed(2)}%` :
+                    `background: ${this.hass.states[this.entity_id]?.attributes.color}; height: ${this.remainHeight.toFixed(2)}%`}
                 >
                   ${this.hass.states[this.entity_id]?.attributes.active &&
                   this.spool_anim_reflection
@@ -110,15 +121,17 @@ export class Spool extends LitElement {
     const stringRoll = (this.renderRoot as ShadowRoot).getElementById("v-string-roll");
     if (!stringRoll) return;
 
+    // Clear previous layers
+    const previousLayers = this.renderRoot.querySelectorAll(".v-string-layer");
+    previousLayers.forEach((layer) => layer.remove());
+
+    if (this.emptySpool) return; // No layers for solid spool
+
     const stringWidth = 2; // matches .string-layer width in CSS
     const rollWidth = stringRoll.offsetWidth; // container width
 
     // Calculate how many lines fit
     const numLayers = Math.floor(rollWidth / (stringWidth * 2)); // 2 = line width + gap
-
-    // Clear previous layers
-    const previousLayers = this.renderRoot.querySelectorAll(".v-string-layer");
-    previousLayers.forEach((layer) => layer.remove());
 
     // Add new layers
     for (let i = 0; i < numLayers; i++) {
@@ -142,10 +155,11 @@ export class Spool extends LitElement {
     const minHeightPercentage = 20;
 
     // If not a Bambu Spool or remaining is less than 0
-    if (
-      this.isAllZeros(this.hass.states[this.entity_id]?.attributes.tag_uid) ||
-      this.hass.states[this.entity_id]?.attributes?.remain < 0
-    ) {
+    this.emptySpool = this.hass.states[this.entity_id]?.attributes.empty;
+    if (this.emptySpool) {
+      this.remainHeight = 20;
+    } else if (this.isAllZeros(this.hass.states[this.entity_id]?.attributes.tag_uid) ||
+               this.hass.states[this.entity_id]?.attributes?.remain < 0) {
       this.remainHeight = maxHeightPercentage;
     } else {
       // Get the container's height
